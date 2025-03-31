@@ -22,7 +22,7 @@ const Properties = () => {
   ];
 
   return (
-    <div className="w-full py-16 md:py-24 bg-gray-100">
+    <div className="w-full py-16 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl md:text-4xl font-playfair mb-12 text-center">Our Featured Properties</h2>
         

@@ -51,7 +51,7 @@
 
 @layer components {
   .glass-panel {
-    @apply bg-slate-800/80 backdrop-blur-md;
+    @apply bg-black/80 backdrop-blur-md;
   }
   
   .nav-link {
@@ -63,10 +63,10 @@
   }
 
   .bg-site-gray {
-    @apply bg-slate-300;
+    @apply bg-white;
   }
 
   .bg-site-dark {
-    @apply bg-slate-800;
+    @apply bg-black;
   }
 }
