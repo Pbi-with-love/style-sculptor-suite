@@ -12,7 +12,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
             <Link to="/" className="text-white text-2xl font-playfair">
-              Elevate-X
+              Home Buying
             </Link>
           </div>
           

@@ -37,4 +37,5 @@ const Map = ({ locations = [] }: MapProps) => {
   );
 };
 
+
 export default Map;

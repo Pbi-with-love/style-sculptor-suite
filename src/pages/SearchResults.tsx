@@ -120,4 +120,8 @@ const SearchResults = () => {
   );
 };
 
+<<<<<<< HEAD
 export default SearchResults;
+=======
+export default SearchResults;
+>>>>>>> 9f8b2c7 (add searchbar)
