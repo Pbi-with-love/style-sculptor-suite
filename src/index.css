@@ -51,7 +51,7 @@
 
 @layer components {
   .glass-panel {
-    @apply bg-black/20 backdrop-blur-md;
+    @apply bg-slate-800/80 backdrop-blur-md;
   }
   
   .nav-link {
@@ -60,5 +60,13 @@
   
   .btn-primary {
     @apply px-6 py-3 border border-white/30 text-white hover:bg-white/10 transition-all rounded-sm;
+  }
+
+  .bg-site-gray {
+    @apply bg-slate-300;
+  }
+
+  .bg-site-dark {
+    @apply bg-slate-800;
   }
 }
