@@ -62,6 +62,32 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
     environmentalType?: string;
     value?: 'low' | 'high';
   } | null>(null);
+  const [sampleProperties, setSampleProperties] = useState([
+    {
+      id: "1",
+      title: "Modern Downtown Apartment",
+      description: "A spacious 3-bedroom apartment with smart home features in the heart of downtown.",
+      price: "$520,000",
+      imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
+      address: "123 Main St, Downtown District"
+    },
+    {
+      id: "2",
+      title: "Suburban Family Home",
+      description: "Beautiful 4-bedroom house with a backyard and smart security system in a family-friendly neighborhood.",
+      price: "$650,000",
+      imageUrl: "https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
+      address: "456 Oak Lane, Greenview Heights"
+    },
+    {
+      id: "3",
+      title: "Riverside Condo",
+      description: "Modern 2-bedroom condo with river views, close to public transportation and green spaces.",
+      price: "$475,000",
+      imageUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aG91c2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+      address: "789 River Road, Riverside Community"
+    }
+  ]);
 
   const mainMenuOptions: MenuOption[] = [
     { 
