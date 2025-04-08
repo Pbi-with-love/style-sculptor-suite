@@ -12,9 +12,9 @@ import { environmentalRankings } from '../data/environmentalData';
 const Index = () => {
   // Function to handle environmental data requests from chatbot
   const handleChatbotMapQuery = (query: string) => {
-    if (query.toLowerCase().includes('quiet') || query.toLowerCase().includes('low noise')) {
-      // @ts-ignore - Using the function exposed on window by Map component
-      const quietPlace = window.findQuietPlaces?.();
+    // Type guard to check if the function exists on window
+    if (typeof window.findQuietPlaces === 'function') {
+      const quietPlace = window.findQuietPlaces();
       
       if (quietPlace) {
         return {

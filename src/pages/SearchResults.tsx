@@ -195,16 +195,18 @@ const SearchResults = () => {
 
   const handleChatbotMapQuery = (query: string) => {
     if (query.toLowerCase().includes('quiet') || query.toLowerCase().includes('low noise')) {
-      const quietPlace = window.findQuietPlaces?.();
-      
-      if (quietPlace) {
-        setHighlightedLocation({ lat: quietPlace.lat, lng: quietPlace.lng });
+      if (typeof window.findQuietPlaces === 'function') {
+        const quietPlace = window.findQuietPlaces();
         
-        return {
-          success: true,
-          message: `I found a quiet area called ${quietPlace.name} with a noise level of ${quietPlace.attributes.noiseLevel}/10.`,
-          location: { lat: quietPlace.lat, lng: quietPlace.lng }
-        };
+        if (quietPlace) {
+          setHighlightedLocation({ lat: quietPlace.lat, lng: quietPlace.lng });
+          
+          return {
+            success: true,
+            message: `I found a quiet area called ${quietPlace.name} with a noise level of ${quietPlace.attributes.noiseLevel}/10.`,
+            location: { lat: quietPlace.lat, lng: quietPlace.lng }
+          };
+        }
       }
     }
     

@@ -36,9 +36,14 @@ interface ScoredEnvironmentalDataPoint extends EnvironmentalDataPoint {
 
 interface ChatbotProps {
   chatbotId?: string;
+  handleMapQuery?: (query: string) => {
+    success: boolean;
+    message: string;
+    location?: { lat: number; lng: number };
+  };
 }
 
-const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
+const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -650,19 +655,12 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
     ]);
   };
 
-  useEffect(() => {
-    if (!mapInteractionEvent) return;
-    
-    const event = new CustomEvent('chatbot-map-interaction', { 
-      detail: mapInteractionEvent 
-    });
-    
-    window.dispatchEvent(event);
-    
-    setTimeout(() => {
-      setMapInteractionEvent(null);
-    }, 100);
-  }, [mapInteractionEvent]);
+  const findQuietPlaces = () => {
+    if (typeof window.findQuietPlaces === 'function') {
+      return window.findQuietPlaces();
+    }
+    return null;
+  };
 
   const analyzePreferences = () => {
     const preferencesByCategory: Record<string, { yes: string[], no: string[] }> = {};
@@ -850,7 +848,7 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
         title: "Smart Urban Loft",
         description: "Fully automated 1-bedroom loft with cutting-edge smart home technology in a tech hub district.",
         price: "$490,000",
-        imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGxvZnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+        imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=60",
         address: "101 Tech Blvd, Innovation District",
         attributes: {
           budget: "moderate",
@@ -901,6 +899,20 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
     
     return allProperties.slice(0, 3);
   };
+
+  useEffect(() => {
+    if (!mapInteractionEvent) return;
+    
+    const event = new CustomEvent('chatbot-map-interaction', { 
+      detail: mapInteractionEvent 
+    });
+    
+    window.dispatchEvent(event);
+    
+    setTimeout(() => {
+      setMapInteractionEvent(null);
+    }, 100);
+  }, [mapInteractionEvent]);
 
   return (
     <div>

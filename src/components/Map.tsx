@@ -179,12 +179,11 @@ const Map = ({
 
   // Make findQuietPlaces available to parent components (like chatbot)
   useEffect(() => {
-    // @ts-ignore - Adding to window for chat interaction
+    // Adding to window for chat interaction
     window.findQuietPlaces = findQuietPlaces;
     
     return () => {
       // Clean up when component unmounts
-      // @ts-ignore
       delete window.findQuietPlaces;
     };
   }, []);
@@ -270,7 +269,7 @@ const Map = ({
                   <p className="text-xs">Type: {place.type}</p>
                   <p className="text-xs">
                     {Object.entries(place.attributes).map(([key, value]) => (
-                      <span key={key}>{key}: {value}</span>
+                      <span key={key}>{key}: {String(value)}</span>
                     ))}
                   </p>
                 </div>
