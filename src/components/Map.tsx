@@ -4,9 +4,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { environmentalData, environmentalRankings } from '../data/environmentalData';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
 // Fix for default marker icons in react-leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -41,7 +41,17 @@ let DefaultIcon = L.icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41]
 });
-L.Marker.prototype.options.icon = DefaultIcon;
+
+// Need to set up the icon before rendering the map
+useEffect(() => {
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+  });
+}, []);
 
 // Component to adjust map view when props change
 function MapController({ center, zoom, places }: { center?: [number, number], zoom?: number, places?: any[] }) {
@@ -52,7 +62,7 @@ function MapController({ center, zoom, places }: { center?: [number, number], zo
       map.setView(center, zoom);
     } else if (places && places.length > 0) {
       // Create bounds and fit map to all places
-      const bounds = L.latLngBounds(places.map(place => [place.lat, place.lng]));
+      const bounds = L.latLngBounds(places.map(place => [place.lat, place.lng] as L.LatLngExpression));
       map.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [map, center, zoom, places]);
