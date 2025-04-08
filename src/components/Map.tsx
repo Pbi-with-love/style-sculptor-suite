@@ -7,6 +7,7 @@ import { environmentalData, environmentalRankings } from '../data/environmentalD
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import MapLegend from './MapLegend';
 
 // Fix for default marker icons in react-leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -87,13 +88,8 @@ const Map = ({
   
   // Fix Leaflet default icon issue when component mounts
   useEffect(() => {
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconUrl: icon,
-      shadowUrl: iconShadow,
-      iconSize: [25, 41],
-      iconAnchor: [12, 41]
-    });
+    // Using a different approach that doesn't use _getIconUrl
+    L.Marker.prototype.options.icon = DefaultIcon;
   }, []);
   
   // Handle selection of environmental metric
@@ -223,6 +219,13 @@ const Map = ({
           </SelectContent>
         </Select>
       </div>
+      
+      {/* Map Legend - show only when in environmental view */}
+      {view === 'environmental' && (
+        <div className="absolute bottom-4 right-4 z-[1000]">
+          <MapLegend selectedMetric={selectedMetric} />
+        </div>
+      )}
       
       {/* Leaflet Map */}
       <div className="h-full w-full">
