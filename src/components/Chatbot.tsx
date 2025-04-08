@@ -30,7 +30,6 @@ interface EnvironmentalPreference {
   value: 'low' | 'high';
 }
 
-// Add matchScore to extend EnvironmentalDataPoint for sorting purposes
 interface ScoredEnvironmentalDataPoint extends EnvironmentalDataPoint {
   matchScore?: number;
 }
@@ -195,7 +194,6 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
     return null;
   };
 
-  // Updated findBestLocationsForPreferences to use ScoredEnvironmentalDataPoint
   const findBestLocationsForPreferences = (preferences: EnvironmentalPreference[]): ScoredEnvironmentalDataPoint[] => {
     if (preferences.length === 0) return [];
     
@@ -305,7 +303,6 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
     return true;
   };
 
-  // Add the missing handleMenuSelect function
   const handleMenuSelect = (menuId: string) => {
     setActiveMenu(menuId);
     setShowMainMenu(false);
@@ -851,4 +848,39 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
       {
         id: "5",
         title: "Green Community Townhouse",
-        description: "Energy-efficient 3-bedroom townhouse in a walkable community with bike paths and parks
+        description: "Energy-efficient 3-bedroom townhouse in a walkable community with bike paths and parks",
+        price: "$580,000",
+        imageUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+        address: "234 Eco Lane, Green Valley",
+        attributes: {
+          budget: "moderate",
+          location: "suburban",
+          size: "medium",
+          age: "new",
+          community: "eco-conscious",
+          education: "high priority",
+          environment: "green spaces priority",
+          lifestyle: "healthy living",
+          mobility: "bike-friendly preference",
+          technology: "eco-tech",
+          crimeRate: "low",
+          noiseLevel: "low",
+          pollution: "very low",
+          trafficCongestion: "low",
+          greenSpaceAccess: "very high",
+          schoolQuality: "high"
+        }
+      }
+    ];
+    
+    return allProperties.slice(0, 3);
+  };
+
+  return (
+    <div>
+      {/* JSX rendering */}
+    </div>
+  );
+};
+
+export default Chatbot;
