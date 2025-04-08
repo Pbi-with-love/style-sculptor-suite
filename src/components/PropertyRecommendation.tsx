@@ -12,7 +12,7 @@ interface Property {
 
 interface PropertyRecommendationProps {
   properties: Property[];
-  title?: string; // Make title optional
+  title?: string;
 }
 
 const PropertyRecommendation = ({ properties, title = "Recommended Properties" }: PropertyRecommendationProps) => {

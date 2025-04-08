@@ -30,6 +30,11 @@ interface EnvironmentalPreference {
   value: 'low' | 'high';
 }
 
+// Add matchScore to extend EnvironmentalDataPoint for sorting purposes
+interface ScoredEnvironmentalDataPoint extends EnvironmentalDataPoint {
+  matchScore?: number;
+}
+
 interface ChatbotProps {
   chatbotId?: string;
 }
@@ -190,7 +195,8 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
     return null;
   };
 
-  const findBestLocationsForPreferences = (preferences: EnvironmentalPreference[]): EnvironmentalDataPoint[] => {
+  // Updated findBestLocationsForPreferences to use ScoredEnvironmentalDataPoint
+  const findBestLocationsForPreferences = (preferences: EnvironmentalPreference[]): ScoredEnvironmentalDataPoint[] => {
     if (preferences.length === 0) return [];
     
     const scoredLocations = environmentalData.map(location => {
@@ -297,6 +303,29 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
     }
     
     return true;
+  };
+
+  // Add the missing handleMenuSelect function
+  const handleMenuSelect = (menuId: string) => {
+    setActiveMenu(menuId);
+    setShowMainMenu(false);
+    
+    const selectedMenu = mainMenuOptions.find(menu => menu.id === menuId);
+    
+    if (selectedMenu && selectedMenu.questions && selectedMenu.questions.length > 0) {
+      const firstQuestion = selectedMenu.questions[0];
+      
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        text: firstQuestion,
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+      setCurrentQuestion(firstQuestion);
+      setCurrentQuestionIndex(0);
+    }
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -555,33 +584,6 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
       setShowRecommendations(true);
     }, 1000);
   };
-
-  const [sampleProperties, setSampleProperties] = useState([
-    {
-      id: "1",
-      title: "Modern Downtown Apartment",
-      description: "A spacious 3-bedroom apartment with smart home features in the heart of downtown.",
-      price: "$520,000",
-      imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
-      address: "123 Main St, Downtown District"
-    },
-    {
-      id: "2",
-      title: "Suburban Family Home",
-      description: "Beautiful 4-bedroom house with a backyard and smart security system in a family-friendly neighborhood.",
-      price: "$650,000",
-      imageUrl: "https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
-      address: "456 Oak Lane, Greenview Heights"
-    },
-    {
-      id: "3",
-      title: "Riverside Condo",
-      description: "Modern 2-bedroom condo with river views, close to public transportation and green spaces.",
-      price: "$475,000",
-      imageUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aG91c2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-      address: "789 River Road, Riverside Community"
-    }
-  ]);
 
   const handleResetChat = () => {
     setMessages([{
@@ -849,183 +851,4 @@ const Chatbot = ({ chatbotId = 'default-chatbot' }: ChatbotProps) => {
       {
         id: "5",
         title: "Green Community Townhouse",
-        description: "Energy-efficient 3-bedroom townhouse in a walkable community with bike paths and parks.",
-        price: "$580,000",
-        imageUrl: "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHRvd25ob3VzZXxlbnwwfHwwfHx8MA%3D&auto=format&fit=crop&w=500&q=60",
-        address: "234 Green Way, Eco Village",
-        attributes: {
-          budget: "high",
-          location: "suburban",
-          size: "large",
-          age: "new",
-          community: "eco-conscious",
-          education: "high priority",
-          environment: "green spaces priority",
-          lifestyle: "community-focused",
-          mobility: "bike-friendly preference",
-          technology: "tech-forward",
-          crimeRate: "low",
-          noiseLevel: "low",
-          pollution: "low",
-          trafficCongestion: "low",
-          greenSpaceAccess: "high",
-          schoolQuality: "high"
-        }
-      }
-    ];
-    
-    const scoredProperties = allProperties.map(property => {
-      let score = 0;
-      const maxPossibleScore = Object.keys(analysis).length;
-      
-      Object.entries(analysis).forEach(([key, value]) => {
-        if (property.attributes[key as keyof typeof property.attributes] === value) {
-          score += 1;
-        }
-      });
-      
-      const matchPercentage = (score / maxPossibleScore) * 100;
-      return {
-        ...property,
-        matchScore: matchPercentage
-      };
-    });
-    
-    return scoredProperties
-      .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
-      .slice(0, 3)
-      .map(({ id, title, description, price, imageUrl, address, matchScore }) => ({
-        id,
-        title: `${title} (${Math.round(matchScore || 0)}% match)`,
-        description,
-        price,
-        imageUrl,
-        address
-      }));
-  };
-
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button 
-            className="h-14 w-14 rounded-full shadow-lg"
-            variant="default"
-          >
-            <MessageCircle size={24} />
-          </Button>
-        </SheetTrigger>
-        <SheetContent className="w-[90vw] sm:max-w-md p-0 h-[80vh] flex flex-col">
-          <SheetHeader className="p-4 border-b">
-            <div className="flex justify-between items-center">
-              <SheetTitle>Home Buying Assistant</SheetTitle>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-8 px-2"
-                  onClick={handleResetChat}
-                >
-                  Reset
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setIsOpen(false)}>
-                  <X size={18} />
-                  <span className="sr-only">Close</span>
-                </Button>
-              </div>
-            </div>
-          </SheetHeader>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div 
-                key={message.id} 
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div 
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    message.sender === 'user' 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted'
-                  }`}
-                >
-                  <p className="text-sm">{message.text}</p>
-                  <span className="text-xs opacity-70 mt-1 block">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              </div>
-            ))}
-            
-            {showRecommendations && (
-              <PropertyRecommendation properties={sampleProperties} />
-            )}
-          </div>
-          
-          {currentQuestion && (
-            <div className="px-4 pb-2 flex justify-center gap-4 mt-2">
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-2 border-green-500 hover:bg-green-500/10" 
-                onClick={() => handleAnswerQuestion('yes')}
-              >
-                <ThumbsUp size={16} className="text-green-500" />
-                Yes
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-2 border-red-500 hover:bg-red-500/10" 
-                onClick={() => handleAnswerQuestion('no')}
-              >
-                <ThumbsDown size={16} className="text-red-500" />
-                No
-              </Button>
-            </div>
-          )}
-          
-          {showMainMenu && !currentQuestion && (
-            <div className="space-y-2 mt-2 px-4 pb-2">
-              {mainMenuOptions.map(option => (
-                <Button
-                  key={option.id}
-                  variant="outline"
-                  className="w-full justify-between text-left"
-                  onClick={() => handleMenuSelect(option.id)}
-                >
-                  <span>{option.title}</span>
-                  <ChevronRight size={16} />
-                </Button>
-              ))}
-              {(userPreferences.length > 0 || environmentalPreferences.length > 0) && (
-                <Button
-                  variant="default"
-                  className="w-full mt-2"
-                  onClick={handleShowRecommendations}
-                >
-                  Show Recommended Properties ({userPreferences.length + environmentalPreferences.length} preferences)
-                </Button>
-              )}
-            </div>
-          )}
-          
-          <form onSubmit={handleSendMessage} className="p-4 border-t">
-            <div className="flex gap-2">
-              <Input
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1"
-              />
-              <Button type="submit" size="icon">
-                <Send size={18} />
-                <span className="sr-only">Send</span>
-              </Button>
-            </div>
-          </form>
-        </SheetContent>
-      </Sheet>
-    </div>
-  );
-};
-
-export default Chatbot;
+        description: "Energy-efficient 3-bedroom townhouse in a walkable community with bike paths and parks
