@@ -42,17 +42,6 @@ let DefaultIcon = L.icon({
   iconAnchor: [12, 41]
 });
 
-// Need to set up the icon before rendering the map
-useEffect(() => {
-  delete L.Icon.Default.prototype._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-  });
-}, []);
-
 // Component to adjust map view when props change
 function MapController({ center, zoom, places }: { center?: [number, number], zoom?: number, places?: any[] }) {
   const map = useMap();
@@ -95,6 +84,17 @@ const Map = ({
   const [filteredPlaces, setFilteredPlaces] = useState<any[]>([]);
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.0060]);
   const [mapZoom, setMapZoom] = useState(13);
+  
+  // Fix Leaflet default icon issue when component mounts
+  useEffect(() => {
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconUrl: icon,
+      shadowUrl: iconShadow,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41]
+    });
+  }, []);
   
   // Handle selection of environmental metric
   const handleMetricChange = (value: string) => {
