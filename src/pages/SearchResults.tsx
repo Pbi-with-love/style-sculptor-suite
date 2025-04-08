@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -9,7 +8,6 @@ import Footer from '../components/Footer';
 import SearchBar from '../components/SearchBar';
 import { environmentalData, findLocationsByEnvironmentalCriteria } from '../data/environmentalData';
 
-// Mock data for demonstration
 const mockProperties = [
   {
     id: '1',
@@ -114,12 +112,10 @@ const SearchResults = () => {
   const [highlightedLocation, setHighlightedLocation] = useState<{lat: number; lng: number} | null>(null);
   
   useEffect(() => {
-    // Get the search query from URL parameters
     const params = new URLSearchParams(location.search);
     const query = params.get('q') || '';
     setSearchQuery(query);
     
-    // Filter properties based on the search query
     if (query) {
       const filtered = mockProperties.filter(property => 
         property.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -133,11 +129,9 @@ const SearchResults = () => {
   }, [location.search]);
 
   const handleSearch = (query: string) => {
-    // In a real app, you would navigate to the search page with the query
     window.history.pushState({}, '', `/search?q=${encodeURIComponent(query)}`);
     setSearchQuery(query);
     
-    // Filter properties based on the search query
     const filtered = mockProperties.filter(property => 
       property.title.toLowerCase().includes(query.toLowerCase()) ||
       property.description.toLowerCase().includes(query.toLowerCase()) ||
@@ -146,25 +140,20 @@ const SearchResults = () => {
     setFilteredProperties(filtered);
   };
   
-  // Handle environmental filter changes
   const handleEnvironmentalFilterChange = (type: string, value: 'low' | 'high') => {
-    // First, check if this filter already exists
     const existingFilterIndex = environmentalFilters.findIndex(f => f.type === type);
     
     let newFilters;
     
     if (existingFilterIndex >= 0) {
-      // Update existing filter
       newFilters = [...environmentalFilters];
       newFilters[existingFilterIndex] = { type, value };
     } else {
-      // Add new filter
       newFilters = [...environmentalFilters, { type, value }];
     }
     
     setEnvironmentalFilters(newFilters);
     
-    // Find locations matching these environmental criteria
     const matchingLocations = findLocationsByEnvironmentalCriteria(
       newFilters.map(f => ({ 
         type: f.type as any, 
@@ -172,10 +161,8 @@ const SearchResults = () => {
       }))
     );
     
-    // Filter properties to those in matching locations
     if (matchingLocations.length > 0) {
       const matchingPropertyIds = matchingLocations.map(loc => {
-        // Find property that matches this location
         const nearbyProperty = mockProperties.find(p => 
           Math.abs(p.lat - loc.lat) < 0.01 && 
           Math.abs(p.lng - loc.lng) < 0.01
@@ -188,9 +175,7 @@ const SearchResults = () => {
     }
   };
   
-  // Handle map click to focus on a property
   const handleMapClick = (location: { lat: number; lng: number }) => {
-    // Find the property closest to this location
     const property = mockProperties.find(p => 
       Math.abs(p.lat - location.lat) < 0.01 && 
       Math.abs(p.lng - location.lng) < 0.01
@@ -198,17 +183,36 @@ const SearchResults = () => {
     
     if (property) {
       setHighlightedLocation({ lat: property.lat, lng: property.lng });
-      // You could also scroll to the property in the list or highlight it
     }
   };
 
-  // Transform the properties for the map component
   const mapLocations = filteredProperties.map(property => ({
     id: property.id,
     lat: property.lat,
     lng: property.lng,
     title: property.title,
   }));
+
+  const handleChatbotMapQuery = (query: string) => {
+    if (query.toLowerCase().includes('quiet') || query.toLowerCase().includes('low noise')) {
+      const quietPlace = window.findQuietPlaces?.();
+      
+      if (quietPlace) {
+        setHighlightedLocation({ lat: quietPlace.lat, lng: quietPlace.lng });
+        
+        return {
+          success: true,
+          message: `I found a quiet area called ${quietPlace.name} with a noise level of ${quietPlace.attributes.noiseLevel}/10.`,
+          location: { lat: quietPlace.lat, lng: quietPlace.lng }
+        };
+      }
+    }
+    
+    return {
+      success: false,
+      message: "I couldn't find any relevant environmental data for your query."
+    };
+  };
 
   return (
     <div className="min-h-screen bg-site-gray flex flex-col">
@@ -266,7 +270,7 @@ const SearchResults = () => {
         </div>
       </div>
       
-      <Chatbot chatbotId="environmental-chatbot" />
+      <Chatbot chatbotId="environmental-chatbot" handleMapQuery={handleChatbotMapQuery} />
       <Footer />
     </div>
   );

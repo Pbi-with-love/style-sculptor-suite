@@ -10,6 +10,27 @@ import Map from '../components/Map';
 import { environmentalRankings } from '../data/environmentalData';
 
 const Index = () => {
+  // Function to handle environmental data requests from chatbot
+  const handleChatbotMapQuery = (query: string) => {
+    if (query.toLowerCase().includes('quiet') || query.toLowerCase().includes('low noise')) {
+      // @ts-ignore - Using the function exposed on window by Map component
+      const quietPlace = window.findQuietPlaces?.();
+      
+      if (quietPlace) {
+        return {
+          success: true,
+          message: `I found a quiet area called ${quietPlace.name} with a noise level of ${quietPlace.attributes.noiseLevel}/10.`,
+          location: { lat: quietPlace.lat, lng: quietPlace.lng }
+        };
+      }
+    }
+    
+    return {
+      success: false,
+      message: "I couldn't find any relevant environmental data for your query."
+    };
+  };
+
   return (
     <div className="min-h-screen bg-site-gray">
       <Navbar />
@@ -65,7 +86,7 @@ const Index = () => {
         </div>
       </section>
       
-      <Chatbot chatbotId="home-chatbot" />
+      <Chatbot chatbotId="home-chatbot" handleMapQuery={handleChatbotMapQuery} />
       <Footer />
     </div>
   );
