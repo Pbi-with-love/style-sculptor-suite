@@ -12,9 +12,10 @@ interface Property {
 
 interface PropertyRecommendationProps {
   properties: Property[];
+  title?: string; // Make title optional
 }
 
-const PropertyRecommendation = ({ properties }: PropertyRecommendationProps) => {
+const PropertyRecommendation = ({ properties, title = "Recommended Properties" }: PropertyRecommendationProps) => {
   if (properties.length === 0) {
     return (
       <Card className="h-full">
@@ -29,7 +30,7 @@ const PropertyRecommendation = ({ properties }: PropertyRecommendationProps) => 
 
   return (
     <div className="space-y-4 h-full overflow-y-auto pr-2">
-      <h2 className="text-xl font-playfair mb-4">Recommended Properties</h2>
+      <h2 className="text-xl font-playfair mb-4">{title}</h2>
       {properties.map((property) => (
         <Card key={property.id} className="mb-4">
           <CardHeader className="pb-2">

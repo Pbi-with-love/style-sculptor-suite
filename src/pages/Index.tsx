@@ -13,7 +13,7 @@ const Index = () => {
       <Hero />
       <Stats />
       <Properties />
-      <Chatbot />
+      <Chatbot chatbotId="home-chatbot" />
       <Footer />
     </div>
   );
