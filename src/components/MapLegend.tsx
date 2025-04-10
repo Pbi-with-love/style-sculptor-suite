@@ -22,13 +22,26 @@ const MapLegend = ({ selectedMetric, className = '' }: MapLegendProps) => {
     }
   };
 
+  // Add special formatting for price display
+  const getValueDisplay = (level: 'high' | 'low') => {
+    if (selectedMetric === 'averagePrice') {
+      return level === 'high' ? '$800k+' : 'Under $700k';
+    }
+    
+    if (selectedMetric === 'bedroomsAverage') {
+      return level === 'high' ? '3+ bedrooms' : '1-2 bedrooms';
+    }
+    
+    return level === 'high' ? currentRanking.high : currentRanking.low;
+  };
+
   return (
     <div className={`bg-white/90 backdrop-blur-sm rounded-md p-3 shadow-sm ${className}`}>
       <div className="text-sm font-medium mb-2">{currentRanking.label} Legend</div>
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className={getColorForLevel(true)}>
-            {currentRanking.high}
+            {getValueDisplay('high')}
           </Badge>
           <span className="text-xs text-muted-foreground">
             {currentRanking.isHigherBetter ? 'Better' : 'Worse'}
@@ -36,7 +49,7 @@ const MapLegend = ({ selectedMetric, className = '' }: MapLegendProps) => {
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className={getColorForLevel(false)}>
-            {currentRanking.low}
+            {getValueDisplay('low')}
           </Badge>
           <span className="text-xs text-muted-foreground">
             {currentRanking.isHigherBetter ? 'Worse' : 'Better'}
