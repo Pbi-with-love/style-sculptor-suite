@@ -1,7 +1,6 @@
 
 import SearchBar from './SearchBar';
 import EnvironmentalFilters from './EnvironmentalFilters';
-import MapToggle from './MapToggle';
 
 interface EnvironmentalFilter {
   type: string;
@@ -11,19 +10,15 @@ interface EnvironmentalFilter {
 interface SearchHeaderProps {
   searchQuery: string;
   environmentalFilters: EnvironmentalFilter[];
-  mapType: 'leaflet' | 'oskari';
   onSearch: (query: string) => void;
   onClearFilters: () => void;
-  onToggleMapType: () => void;
 }
 
 const SearchHeader = ({
   searchQuery,
   environmentalFilters,
-  mapType,
   onSearch,
-  onClearFilters,
-  onToggleMapType
+  onClearFilters
 }: SearchHeaderProps) => {
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 bg-white">
@@ -32,14 +27,10 @@ const SearchHeader = ({
           {searchQuery ? `Search Results for "${searchQuery}"` : "All Properties"}
         </h1>
         <SearchBar onSearch={onSearch} />
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-4">
           <EnvironmentalFilters 
             filters={environmentalFilters} 
             onClearFilters={onClearFilters}
-          />
-          <MapToggle 
-            mapType={mapType} 
-            onToggle={onToggleMapType} 
           />
         </div>
       </div>

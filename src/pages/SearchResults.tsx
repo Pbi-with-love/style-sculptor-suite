@@ -110,7 +110,6 @@ const SearchResults = () => {
     value: 'low' | 'high';
   }[]>([]);
   const [highlightedLocation, setHighlightedLocation] = useState<{lat: number; lng: number} | null>(null);
-  const [mapType, setMapType] = useState<'leaflet' | 'oskari'>('leaflet');
   
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -210,10 +209,6 @@ const SearchResults = () => {
     };
   };
 
-  const toggleMapType = () => {
-    setMapType(prev => prev === 'leaflet' ? 'oskari' : 'leaflet');
-  };
-
   const handleClearFilters = () => {
     setEnvironmentalFilters([]);
     setFilteredProperties(mockProperties);
@@ -233,17 +228,14 @@ const SearchResults = () => {
       <SearchHeader 
         searchQuery={searchQuery}
         environmentalFilters={environmentalFilters}
-        mapType={mapType}
         onSearch={handleSearch}
         onClearFilters={handleClearFilters}
-        onToggleMapType={toggleMapType}
       />
       
       <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <PropertyMapContainer 
-              mapType={mapType}
               locations={mapLocations}
               onEnvironmentalFilterChange={handleEnvironmentalFilterChange}
               onMapClick={handleMapClick}

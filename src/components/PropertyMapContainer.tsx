@@ -1,6 +1,5 @@
 
 import Map from './Map';
-import OskariMap from './OskariMap';
 
 interface Location {
   id: string;
@@ -10,7 +9,6 @@ interface Location {
 }
 
 interface PropertyMapContainerProps {
-  mapType: 'leaflet' | 'oskari';
   locations: Location[];
   onEnvironmentalFilterChange?: (type: string, value: 'low' | 'high') => void;
   onMapClick: (location: { lat: number; lng: number }) => void;
@@ -18,7 +16,6 @@ interface PropertyMapContainerProps {
 }
 
 const PropertyMapContainer = ({
-  mapType,
   locations,
   onEnvironmentalFilterChange,
   onMapClick,
@@ -26,20 +23,12 @@ const PropertyMapContainer = ({
 }: PropertyMapContainerProps) => {
   return (
     <div className="h-[70vh]">
-      {mapType === 'leaflet' ? (
-        <Map 
-          locations={locations} 
-          onEnvironmentalFilterChange={onEnvironmentalFilterChange}
-          onMapClick={onMapClick}
-          highlightedLocation={highlightedLocation}
-        />
-      ) : (
-        <OskariMap 
-          locations={locations}
-          onMapClick={onMapClick}
-          highlightedLocation={highlightedLocation}
-        />
-      )}
+      <Map 
+        locations={locations} 
+        onEnvironmentalFilterChange={onEnvironmentalFilterChange}
+        onMapClick={onMapClick}
+        highlightedLocation={highlightedLocation}
+      />
     </div>
   );
 };
