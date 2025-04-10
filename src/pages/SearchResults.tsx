@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Map from '../components/Map';
+import OskariMap from '../components/OskariMap';
 import PropertyRecommendation from '../components/PropertyRecommendation';
 import Chatbot from '../components/Chatbot';
 import Footer from '../components/Footer';
 import SearchBar from '../components/SearchBar';
+import { Button } from '@/components/ui/button';
 import { environmentalData, findLocationsByEnvironmentalCriteria } from '../data/environmentalData';
 
 const mockProperties = [
@@ -110,6 +112,7 @@ const SearchResults = () => {
     value: 'low' | 'high';
   }[]>([]);
   const [highlightedLocation, setHighlightedLocation] = useState<{lat: number; lng: number} | null>(null);
+  const [mapType, setMapType] = useState<'leaflet' | 'oskari'>('leaflet');
   
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -186,13 +189,6 @@ const SearchResults = () => {
     }
   };
 
-  const mapLocations = filteredProperties.map(property => ({
-    id: property.id,
-    lat: property.lat,
-    lng: property.lng,
-    title: property.title,
-  }));
-
   const handleChatbotMapQuery = (query: string) => {
     if (query.toLowerCase().includes('quiet') || query.toLowerCase().includes('low noise')) {
       if (typeof window.findQuietPlaces === 'function') {
@@ -216,6 +212,17 @@ const SearchResults = () => {
     };
   };
 
+  const toggleMapType = () => {
+    setMapType(prev => prev === 'leaflet' ? 'oskari' : 'leaflet');
+  };
+
+  const mapLocations = filteredProperties.map(property => ({
+    id: property.id,
+    lat: property.lat,
+    lng: property.lng,
+    title: property.title,
+  }));
+
   return (
     <div className="min-h-screen bg-site-gray flex flex-col">
       <Navbar />
@@ -226,25 +233,37 @@ const SearchResults = () => {
             {searchQuery ? `Search Results for "${searchQuery}"` : "All Properties"}
           </h1>
           <SearchBar onSearch={handleSearch} />
-          {environmentalFilters.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              <p className="text-sm font-medium">Active Filters:</p>
-              {environmentalFilters.map((filter) => (
-                <div key={filter.type} className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full">
-                  {filter.type}: {filter.value === 'low' ? 'Low' : 'High'}
-                </div>
-              ))}
-              <button 
-                className="text-xs text-muted-foreground underline"
-                onClick={() => {
-                  setEnvironmentalFilters([]);
-                  setFilteredProperties(mockProperties);
-                }}
-              >
-                Clear all
-              </button>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex flex-wrap gap-2">
+              {environmentalFilters.length > 0 && (
+                <>
+                  <p className="text-sm font-medium">Active Filters:</p>
+                  {environmentalFilters.map((filter) => (
+                    <div key={filter.type} className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full">
+                      {filter.type}: {filter.value === 'low' ? 'Low' : 'High'}
+                    </div>
+                  ))}
+                  <button 
+                    className="text-xs text-muted-foreground underline"
+                    onClick={() => {
+                      setEnvironmentalFilters([]);
+                      setFilteredProperties(mockProperties);
+                    }}
+                  >
+                    Clear all
+                  </button>
+                </>
+              )}
             </div>
-          )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={toggleMapType}
+              className="ml-auto"
+            >
+              {mapType === 'leaflet' ? 'Switch to Tampere Map' : 'Switch to Standard Map'}
+            </Button>
+          </div>
         </div>
       </div>
       
@@ -252,12 +271,20 @@ const SearchResults = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="h-[70vh]">
-              <Map 
-                locations={mapLocations} 
-                onEnvironmentalFilterChange={handleEnvironmentalFilterChange}
-                onMapClick={handleMapClick}
-                highlightedLocation={highlightedLocation}
-              />
+              {mapType === 'leaflet' ? (
+                <Map 
+                  locations={mapLocations} 
+                  onEnvironmentalFilterChange={handleEnvironmentalFilterChange}
+                  onMapClick={handleMapClick}
+                  highlightedLocation={highlightedLocation}
+                />
+              ) : (
+                <OskariMap 
+                  locations={mapLocations}
+                  onMapClick={handleMapClick}
+                  highlightedLocation={highlightedLocation}
+                />
+              )}
             </div>
             <div className="h-[70vh]">
               <PropertyRecommendation 
