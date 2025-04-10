@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Map from '../components/Map';
-import OskariMap from '../components/OskariMap';
+import PropertyMapContainer from '../components/PropertyMapContainer';
 import PropertyRecommendation from '../components/PropertyRecommendation';
 import Chatbot from '../components/Chatbot';
 import Footer from '../components/Footer';
-import SearchBar from '../components/SearchBar';
-import { Button } from '@/components/ui/button';
-import { environmentalData, findLocationsByEnvironmentalCriteria } from '../data/environmentalData';
+import SearchHeader from '../components/SearchHeader';
+import { findLocationsByEnvironmentalCriteria } from '../data/environmentalData';
 
 const mockProperties = [
   {
@@ -216,6 +214,11 @@ const SearchResults = () => {
     setMapType(prev => prev === 'leaflet' ? 'oskari' : 'leaflet');
   };
 
+  const handleClearFilters = () => {
+    setEnvironmentalFilters([]);
+    setFilteredProperties(mockProperties);
+  };
+
   const mapLocations = filteredProperties.map(property => ({
     id: property.id,
     lat: property.lat,
@@ -227,65 +230,25 @@ const SearchResults = () => {
     <div className="min-h-screen bg-site-gray flex flex-col">
       <Navbar />
       
-      <div className="py-8 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-playfair mb-6">
-            {searchQuery ? `Search Results for "${searchQuery}"` : "All Properties"}
-          </h1>
-          <SearchBar onSearch={handleSearch} />
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex flex-wrap gap-2">
-              {environmentalFilters.length > 0 && (
-                <>
-                  <p className="text-sm font-medium">Active Filters:</p>
-                  {environmentalFilters.map((filter) => (
-                    <div key={filter.type} className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full">
-                      {filter.type}: {filter.value === 'low' ? 'Low' : 'High'}
-                    </div>
-                  ))}
-                  <button 
-                    className="text-xs text-muted-foreground underline"
-                    onClick={() => {
-                      setEnvironmentalFilters([]);
-                      setFilteredProperties(mockProperties);
-                    }}
-                  >
-                    Clear all
-                  </button>
-                </>
-              )}
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={toggleMapType}
-              className="ml-auto"
-            >
-              {mapType === 'leaflet' ? 'Switch to Tampere Map' : 'Switch to Standard Map'}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <SearchHeader 
+        searchQuery={searchQuery}
+        environmentalFilters={environmentalFilters}
+        mapType={mapType}
+        onSearch={handleSearch}
+        onClearFilters={handleClearFilters}
+        onToggleMapType={toggleMapType}
+      />
       
       <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="h-[70vh]">
-              {mapType === 'leaflet' ? (
-                <Map 
-                  locations={mapLocations} 
-                  onEnvironmentalFilterChange={handleEnvironmentalFilterChange}
-                  onMapClick={handleMapClick}
-                  highlightedLocation={highlightedLocation}
-                />
-              ) : (
-                <OskariMap 
-                  locations={mapLocations}
-                  onMapClick={handleMapClick}
-                  highlightedLocation={highlightedLocation}
-                />
-              )}
-            </div>
+            <PropertyMapContainer 
+              mapType={mapType}
+              locations={mapLocations}
+              onEnvironmentalFilterChange={handleEnvironmentalFilterChange}
+              onMapClick={handleMapClick}
+              highlightedLocation={highlightedLocation}
+            />
             <div className="h-[70vh]">
               <PropertyRecommendation 
                 properties={filteredProperties} 
