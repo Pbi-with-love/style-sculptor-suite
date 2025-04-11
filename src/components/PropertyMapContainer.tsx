@@ -1,5 +1,5 @@
 
-import Map from './Map';
+import CustomMap from './CustomMap';
 
 interface Location {
   id: string;
@@ -23,7 +23,7 @@ const PropertyMapContainer = ({
 }: PropertyMapContainerProps) => {
   return (
     <div className="h-[70vh]">
-      <Map 
+      <CustomMap 
         locations={locations} 
         onEnvironmentalFilterChange={onEnvironmentalFilterChange}
         onMapClick={onMapClick}

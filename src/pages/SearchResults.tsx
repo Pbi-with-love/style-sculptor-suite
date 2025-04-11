@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -188,18 +189,20 @@ const SearchResults = () => {
 
   const handleChatbotMapQuery = (query: string) => {
     if (query.toLowerCase().includes('quiet') || query.toLowerCase().includes('low noise')) {
-      if (typeof window.findQuietPlaces === 'function') {
-        const quietPlace = window.findQuietPlaces();
+      // Custom map doesn't have the findQuietPlaces function, so implement similar functionality here
+      
+      const quietProperty = mockProperties.find(property => 
+        property.environmentalFactors.noiseLevel <= 5
+      );
+      
+      if (quietProperty) {
+        setHighlightedLocation({ lat: quietProperty.lat, lng: quietProperty.lng });
         
-        if (quietPlace) {
-          setHighlightedLocation({ lat: quietPlace.lat, lng: quietPlace.lng });
-          
-          return {
-            success: true,
-            message: `I found a quiet area called ${quietPlace.name} with a noise level of ${quietPlace.attributes.noiseLevel}/10.`,
-            location: { lat: quietPlace.lat, lng: quietPlace.lng }
-          };
-        }
+        return {
+          success: true,
+          message: `I found a quiet property: ${quietProperty.title} with a noise level of ${quietProperty.environmentalFactors.noiseLevel}/10.`,
+          location: { lat: quietProperty.lat, lng: quietProperty.lng }
+        };
       }
     }
     
@@ -254,6 +257,7 @@ const SearchResults = () => {
         </div>
       </div>
       
+      {/* Ensure Chatbot is always displayed */}
       <Chatbot chatbotId="environmental-chatbot" handleMapQuery={handleChatbotMapQuery} />
       <Footer />
     </div>
