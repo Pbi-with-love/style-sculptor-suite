@@ -6,29 +6,73 @@ import Properties from '../components/Properties';
 import Footer from '../components/Footer';
 import Chatbot from '../components/Chatbot';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Map from '../components/Map';
+import PropertyMapContainer from '../components/PropertyMapContainer';
 import { environmentalRankings } from '../data/environmentalData';
+import { useState } from 'react';
 
 const Index = () => {
+  const [highlightedLocation, setHighlightedLocation] = useState<{ lat: number; lng: number } | null>(null);
+
   // Function to handle environmental data requests from chatbot
   const handleChatbotMapQuery = (query: string) => {
-    // Type guard to check if the function exists on window
-    if (typeof window.findQuietPlaces === 'function') {
-      const quietPlace = window.findQuietPlaces();
+    // Check if query is related to a quiet area
+    if (query.toLowerCase().includes('quiet') || query.toLowerCase().includes('noise')) {
+      const quietPlace = {
+        name: "Suburb South",
+        lat: 130,
+        lng: 290,
+        attributes: { noiseLevel: 2 }
+      };
       
-      if (quietPlace) {
-        return {
-          success: true,
-          message: `I found a quiet area called ${quietPlace.name} with a noise level of ${quietPlace.attributes.noiseLevel}/10.`,
-          location: { lat: quietPlace.lat, lng: quietPlace.lng }
-        };
-      }
+      setHighlightedLocation({ lat: quietPlace.lat, lng: quietPlace.lng });
+      
+      return {
+        success: true,
+        message: `I found a quiet area called ${quietPlace.name} with a noise level of ${quietPlace.attributes.noiseLevel}/10.`,
+        location: { lat: quietPlace.lat, lng: quietPlace.lng }
+      };
     }
     
+    // Check if query is related to schools
+    if (query.toLowerCase().includes('school') || query.toLowerCase().includes('education')) {
+      const goodSchoolArea = {
+        name: "Suburb North",
+        lat: 140,
+        lng: 10,
+        attributes: { schoolQuality: 9 }
+      };
+      
+      setHighlightedLocation({ lat: goodSchoolArea.lat, lng: goodSchoolArea.lng });
+      
+      return {
+        success: true,
+        message: `I found an area with excellent schools called ${goodSchoolArea.name} with a school quality rating of ${goodSchoolArea.attributes.schoolQuality}/10.`,
+        location: { lat: goodSchoolArea.lat, lng: goodSchoolArea.lng }
+      };
+    }
+    
+    // For any other environmental query
     return {
       success: false,
-      message: "I couldn't find any relevant environmental data for your query."
+      message: "I couldn't find any specific data for your query. Try asking about noise levels, schools, or pollution."
     };
+  };
+
+  // Sample location data
+  const locationMarkers = [
+    { id: '1', lat: 100, lng: 180, title: 'Modern Apartment in Downtown' },
+    { id: '2', lat: 230, lng: 100, title: 'Spacious Family Home' },
+    { id: '3', lat: 270, lng: 250, title: 'Luxury Penthouse' },
+    { id: '4', lat: 60, lng: 320, title: 'Urban Smart Loft' },
+    { id: '5', lat: 170, lng: 30, title: 'Waterfront Condo' },
+    { id: '6', lat: 380, lng: 120, title: 'Tech Hub Studio' },
+    { id: '7', lat: 390, lng: 270, title: 'Harbor View Apartment' },
+    { id: '8', lat: 60, lng: 70, title: 'Arts District Loft' },
+    { id: '9', lat: 320, lng: 180, title: 'Midtown Townhouse' },
+  ];
+
+  const handleMapClick = (location: { lat: number; lng: number }) => {
+    setHighlightedLocation(location);
   };
 
   return (
@@ -50,7 +94,11 @@ const Index = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 h-[500px]">
-              <Map />
+              <PropertyMapContainer 
+                locations={locationMarkers}
+                onMapClick={handleMapClick}
+                highlightedLocation={highlightedLocation}
+              />
             </div>
             
             <div className="space-y-6">
@@ -86,6 +134,7 @@ const Index = () => {
         </div>
       </section>
       
+      {/* Ensure chatbot appears on the landing page */}
       <Chatbot chatbotId="home-chatbot" handleMapQuery={handleChatbotMapQuery} />
       <Footer />
     </div>
