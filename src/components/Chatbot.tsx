@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { MessageCircle, Send, X, ChevronRight, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { MessageCircle, Send, X, ChevronRight, Check, ThumbsUp, ThumbsDown, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import PropertyRecommendation from './PropertyRecommendation';
 import { environmentalData, environmentalRankings, EnvironmentalDataPoint } from '../data/environmentalData';
 
@@ -93,6 +93,7 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
       address: "789 River Road, Riverside Community"
     }
   ]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const mainMenuOptions: MenuOption[] = [
     { 
@@ -914,9 +915,136 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
     }, 100);
   }, [mapInteractionEvent]);
 
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   return (
-    <div>
-      {/* JSX rendering */}
+    <div className="relative z-50">
+      <button
+        onClick={() => setIsOpen(true)}
+        className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-all mb-4 mr-4"
+        aria-label="Open chat"
+      >
+        <Bot className="w-6 h-6" />
+      </button>
+
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetContent side="right" className="w-[350px] sm:w-[400px] p-0 flex flex-col h-full">
+          <SheetHeader className="px-4 py-3 border-b">
+            <div className="flex justify-between items-center">
+              <SheetTitle className="flex items-center text-lg">
+                <Bot className="mr-2 h-5 w-5" />
+                Home Buying Assistant
+              </SheetTitle>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setIsOpen(false)}
+                className="h-8 w-8"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[80%] p-3 rounded-xl ${
+                    message.sender === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-tr-none'
+                      : 'bg-muted rounded-tl-none'
+                  }`}
+                >
+                  <p className="text-sm">{message.text}</p>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+
+            {showMainMenu && (
+              <div className="space-y-2 mt-4">
+                <p className="text-sm font-medium">What would you like to know about?</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {mainMenuOptions.map((option) => (
+                    <Button
+                      key={option.id}
+                      variant="outline"
+                      className="justify-start h-auto py-2 text-left"
+                      onClick={() => handleMenuSelect(option.id)}
+                    >
+                      <span>{option.title}</span>
+                      <ChevronRight className="ml-auto h-4 w-4" />
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {currentQuestion && (
+              <div className="space-y-2 mt-4">
+                <div className="flex justify-between space-x-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 justify-center"
+                    onClick={() => handleAnswerQuestion('yes')}
+                  >
+                    <Check className="mr-2 h-4 w-4" /> Yes
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 justify-center"
+                    onClick={() => handleAnswerQuestion('no')}
+                  >
+                    <X className="mr-2 h-4 w-4" /> No
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {showRecommendations && (
+              <div className="mt-4">
+                <PropertyRecommendation properties={sampleProperties} title="Recommended Properties" />
+                <div className="mt-4 flex justify-between">
+                  <Button variant="outline" size="sm" onClick={handleResetChat}>
+                    Start Over
+                  </Button>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm" onClick={() => {}}>
+                      <ThumbsDown className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => {}}>
+                      <ThumbsUp className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <form
+            onSubmit={handleSendMessage}
+            className="border-t p-4 flex space-x-2"
+          >
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your message..."
+              className="flex-1"
+            />
+            <Button type="submit" size="icon" disabled={!newMessage.trim()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

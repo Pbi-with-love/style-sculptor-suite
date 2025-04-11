@@ -134,8 +134,11 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Ensure chatbot appears on the landing page */}
-      <Chatbot chatbotId="home-chatbot" handleMapQuery={handleChatbotMapQuery} />
+      {/* Add Chatbot component directly into the JSX */}
+      <div className="fixed bottom-0 right-0 z-50">
+        <Chatbot chatbotId="home-chatbot" handleMapQuery={handleChatbotMapQuery} />
+      </div>
+      
       <Footer />
     </div>
   );
