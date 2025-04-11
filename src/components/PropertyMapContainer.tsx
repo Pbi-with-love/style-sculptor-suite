@@ -22,7 +22,7 @@ const PropertyMapContainer = ({
   highlightedLocation
 }: PropertyMapContainerProps) => {
   return (
-    <div className="h-[70vh]">
+    <div className="h-[70vh] relative">
       <CustomMap 
         locations={locations} 
         onEnvironmentalFilterChange={onEnvironmentalFilterChange}

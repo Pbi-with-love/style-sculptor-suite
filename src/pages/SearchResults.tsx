@@ -206,6 +206,38 @@ const SearchResults = () => {
       }
     }
     
+    if (query.toLowerCase().includes('green') || query.toLowerCase().includes('park')) {
+      const greenProperty = mockProperties.find(property => 
+        property.environmentalFactors.greenSpaceAccess >= 7
+      );
+      
+      if (greenProperty) {
+        setHighlightedLocation({ lat: greenProperty.lat, lng: greenProperty.lng });
+        
+        return {
+          success: true,
+          message: `I found a property with great green space access: ${greenProperty.title} with a green space rating of ${greenProperty.environmentalFactors.greenSpaceAccess}/10.`,
+          location: { lat: greenProperty.lat, lng: greenProperty.lng }
+        };
+      }
+    }
+    
+    if (query.toLowerCase().includes('safe') || query.toLowerCase().includes('low crime')) {
+      const safeProperty = mockProperties.find(property => 
+        property.environmentalFactors.crimeRate <= 4
+      );
+      
+      if (safeProperty) {
+        setHighlightedLocation({ lat: safeProperty.lat, lng: safeProperty.lng });
+        
+        return {
+          success: true,
+          message: `I found a property in a safe area: ${safeProperty.title} with a crime rate of ${safeProperty.environmentalFactors.crimeRate}/10.`,
+          location: { lat: safeProperty.lat, lng: safeProperty.lng }
+        };
+      }
+    }
+    
     return {
       success: false,
       message: "I couldn't find any relevant environmental data for your query."

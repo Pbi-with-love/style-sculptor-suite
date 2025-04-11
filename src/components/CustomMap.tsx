@@ -27,6 +27,10 @@ const mapRegions = [
   { id: 'r4', name: 'Eastside', x: 240, y: 220, width: 130, height: 90, metrics: { noiseLevel: 6, crimeRate: 5, pollution: 7, trafficCongestion: 6, greenSpaceAccess: 5, schoolQuality: 6 } },
   { id: 'r5', name: 'Suburb North', x: 140, y: 10, width: 110, height: 90, metrics: { noiseLevel: 3, crimeRate: 2, pollution: 2, trafficCongestion: 3, greenSpaceAccess: 9, schoolQuality: 9 } },
   { id: 'r6', name: 'Suburb South', x: 130, y: 290, width: 100, height: 80, metrics: { noiseLevel: 2, crimeRate: 1, pollution: 2, trafficCongestion: 2, greenSpaceAccess: 8, schoolQuality: 8 } },
+  // New areas with more varied data
+  { id: 'r7', name: 'Tech District', x: 350, y: 100, width: 90, height: 110, metrics: { noiseLevel: 7, crimeRate: 4, pollution: 5, trafficCongestion: 7, greenSpaceAccess: 4, schoolQuality: 9 } },
+  { id: 'r8', name: 'Harbor View', x: 350, y: 250, width: 100, height: 100, metrics: { noiseLevel: 5, crimeRate: 3, pollution: 6, trafficCongestion: 4, greenSpaceAccess: 7, schoolQuality: 6 } },
+  { id: 'r9', name: 'Cultural Center', x: 30, y: 50, width: 80, height: 70, metrics: { noiseLevel: 6, crimeRate: 5, pollution: 4, trafficCongestion: 6, greenSpaceAccess: 5, schoolQuality: 8 } },
 ];
 
 // Location markers that will be displayed on the map
@@ -36,6 +40,11 @@ const locationMarkers = [
   { id: '3', lat: 270, lng: 250, title: 'Luxury Penthouse' },
   { id: '4', lat: 60, lng: 320, title: 'Urban Smart Loft' },
   { id: '5', lat: 170, lng: 30, title: 'Waterfront Condo' },
+  // New property locations
+  { id: '6', lat: 380, lng: 120, title: 'Tech Hub Studio' },
+  { id: '7', lat: 390, lng: 270, title: 'Harbor View Apartment' },
+  { id: '8', lat: 60, lng: 70, title: 'Arts District Loft' },
+  { id: '9', lat: 320, lng: 180, title: 'Midtown Townhouse' },
 ];
 
 const CustomMap = ({ 
@@ -48,6 +57,8 @@ const CustomMap = ({
   const [selectedMetric, setSelectedMetric] = useState<string>('noiseLevel');
   const [view, setView] = useState<'properties' | 'environmental'>('properties');
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
+  const [showInsights, setShowInsights] = useState<boolean>(false);
+  const [selectedInsight, setSelectedInsight] = useState<string | null>(null);
   
   // Convert metric value to color
   const getMetricColor = (value: number, isHigherBetter: boolean) => {
@@ -92,36 +103,26 @@ const CustomMap = ({
     ctx.lineWidth = 2;
     
     // Horizontal roads
-    ctx.beginPath();
-    ctx.moveTo(0, 100);
-    ctx.lineTo(canvas.width, 100);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.moveTo(0, 200);
-    ctx.lineTo(canvas.width, 200);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.moveTo(0, 300);
-    ctx.lineTo(canvas.width, 300);
-    ctx.stroke();
+    for (let y = 50; y < canvas.height; y += 100) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
     
     // Vertical roads
-    ctx.beginPath();
-    ctx.moveTo(100, 0);
-    ctx.lineTo(100, canvas.height);
-    ctx.stroke();
+    for (let x = 50; x < canvas.width; x += 100) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
     
-    ctx.beginPath();
-    ctx.moveTo(200, 0);
-    ctx.lineTo(200, canvas.height);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.moveTo(300, 0);
-    ctx.lineTo(300, canvas.height);
-    ctx.stroke();
+    // Add some landmarks
+    ctx.fillStyle = '#b1e3ff';
+    ctx.fillRect(270, 320, 130, 80); // Lake
+    ctx.fillStyle = '#d2f1c2';
+    ctx.fillRect(10, 150, 50, 50); // Park
     
     // Draw regions with environmental data
     mapRegions.forEach(region => {
@@ -163,6 +164,14 @@ const CustomMap = ({
         ctx.font = 'bold 14px Arial';
         ctx.fillText(metricValue.toString(), region.x + region.width / 2 - 5, region.y + region.height / 2 + 5);
       }
+      
+      // Draw insights icon if in insights mode
+      if (showInsights) {
+        ctx.fillStyle = '#8b5cf6';
+        ctx.beginPath();
+        ctx.arc(region.x + region.width - 10, region.y + 10, 6, 0, 2 * Math.PI);
+        ctx.fill();
+      }
     });
     
     // Draw location markers
@@ -200,36 +209,104 @@ const CustomMap = ({
         }
       });
     }
+    
+    // Draw region insights if selected
+    if (selectedInsight) {
+      const region = mapRegions.find(r => r.id === selectedInsight);
+      if (region) {
+        // Draw insight popup
+        const x = region.x + region.width / 2;
+        const y = region.y + region.height / 2;
+        
+        // Background
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#1e40af';
+        ctx.lineWidth = 2;
+        
+        const insightWidth = 180;
+        const insightHeight = 120;
+        
+        ctx.fillRect(x - insightWidth / 2, y - insightHeight / 2, insightWidth, insightHeight);
+        ctx.strokeRect(x - insightWidth / 2, y - insightHeight / 2, insightWidth, insightHeight);
+        
+        // Title
+        ctx.fillStyle = '#1e3a8a';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(region.name + ' Insights', x, y - 40);
+        
+        // Metrics
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        
+        const metrics = [
+          `Noise: ${region.metrics.noiseLevel}/10`,
+          `Crime: ${region.metrics.crimeRate}/10`,
+          `Pollution: ${region.metrics.pollution}/10`,
+          `Traffic: ${region.metrics.trafficCongestion}/10`,
+          `Green Space: ${region.metrics.greenSpaceAccess}/10`,
+          `Schools: ${region.metrics.schoolQuality}/10`
+        ];
+        
+        metrics.forEach((metric, index) => {
+          ctx.fillText(metric, x - 80, y - 20 + index * 20);
+        });
+      }
+    }
   };
   
   // Handle canvas click
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas || !onMapClick) return;
+    if (!canvas) return;
     
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
     // Check if clicked on a location marker
-    const clickedLocation = locations.find(location => 
-      Math.abs(location.lat - x) < 10 && Math.abs(location.lng - y) < 10
-    );
-    
-    if (clickedLocation && onMapClick) {
-      onMapClick({ lat: clickedLocation.lat, lng: clickedLocation.lng });
-    }
-    
-    // Check if clicked on a region when in environmental view
-    if (view === 'environmental') {
-      const clickedRegion = mapRegions.find(region => 
-        x >= region.x && x <= region.x + region.width && 
-        y >= region.y && y <= region.y + region.height
+    if (view === 'properties') {
+      const clickedLocation = locations.find(location => 
+        Math.abs(location.lat - x) < 10 && Math.abs(location.lng - y) < 10
       );
       
-      if (clickedRegion) {
-        setHoveredRegion(clickedRegion.id);
+      if (clickedLocation && onMapClick) {
+        onMapClick({ lat: clickedLocation.lat, lng: clickedLocation.lng });
+        return;
       }
+    }
+    
+    // Check if clicked on a region
+    const clickedRegion = mapRegions.find(region => 
+      x >= region.x && x <= region.x + region.width && 
+      y >= region.y && y <= region.y + region.height
+    );
+    
+    if (clickedRegion) {
+      setHoveredRegion(clickedRegion.id);
+      
+      // If in insight mode, show region insights
+      if (showInsights) {
+        setSelectedInsight(prevInsight => 
+          prevInsight === clickedRegion.id ? null : clickedRegion.id
+        );
+      }
+      
+      // In environmental mode, apply filters
+      if (view === 'environmental' && onEnvironmentalFilterChange) {
+        const ranking = environmentalRankings.find(r => r.type === selectedMetric);
+        const value = clickedRegion.metrics[selectedMetric as keyof typeof clickedRegion.metrics] as number;
+        
+        if (ranking) {
+          onEnvironmentalFilterChange(
+            selectedMetric,
+            value > 5 ? 'high' : 'low'
+          );
+        }
+      }
+    } else {
+      // Clear selected insight if clicking outside of regions
+      setSelectedInsight(null);
     }
   };
   
@@ -271,24 +348,45 @@ const CustomMap = ({
   // Toggle between property view and environmental data view
   const toggleView = () => {
     setView(prev => (prev === 'properties' ? 'environmental' : 'properties'));
+    setSelectedInsight(null);
+  };
+
+  // Toggle insights mode
+  const toggleInsights = () => {
+    setShowInsights(prev => !prev);
+    if (!showInsights) {
+      setView('properties');
+    } else {
+      setSelectedInsight(null);
+    }
   };
   
   // Draw the map when component mounts or when dependencies change
   useEffect(() => {
     drawMap();
-  }, [selectedMetric, view, locations, highlightedLocation, hoveredRegion]);
+  }, [selectedMetric, view, locations, highlightedLocation, hoveredRegion, showInsights, selectedInsight]);
   
   return (
     <Card className="w-full h-full min-h-[400px] relative overflow-hidden">
       {/* Map toolbar */}
       <div className="absolute top-2 left-2 right-2 z-[10] flex justify-between items-center gap-2 p-2 bg-background/90 backdrop-blur-sm rounded-lg">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={toggleView}
-        >
-          {view === 'properties' ? 'Show Environmental Data' : 'Show Properties'}
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={toggleView}
+          >
+            {view === 'properties' ? 'Show Environmental Data' : 'Show Properties'}
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleInsights}
+          >
+            {showInsights ? 'Hide Insights' : 'Show Insights'}
+          </Button>
+        </div>
         
         <Select value={selectedMetric} onValueChange={handleMetricChange}>
           <SelectTrigger className="w-[200px]">
@@ -337,7 +435,7 @@ const CustomMap = ({
       <div className="h-full w-full pt-14">
         <canvas 
           ref={canvasRef}
-          width={400}
+          width={500}
           height={400}
           className="w-full h-full bg-gray-100 rounded-md"
           onClick={handleCanvasClick}
