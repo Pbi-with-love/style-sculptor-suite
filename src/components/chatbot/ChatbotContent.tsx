@@ -1,41 +1,29 @@
+
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, X, ChevronRight, Check, ThumbsUp, ThumbsDown, Bot } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import PropertyRecommendation from './PropertyRecommendation';
-import { environmentalData, environmentalRankings, EnvironmentalDataPoint } from '../data/environmentalData';
+import { Bot, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import ChatMessage from './ChatMessage';
+import ChatMenu from './ChatMenu';
+import QuestionButtons from './QuestionButtons';
+import ChatInputForm from './ChatInputForm';
+import RecommendationActions from './RecommendationActions';
+import PropertyRecommendation from '../PropertyRecommendation';
+import { environmentalRankings, environmentalData } from '../../data/environmentalData';
+import { 
+  type Message, 
+  type MenuOption, 
+  type UserPreference, 
+  type EnvironmentalPreference,
+  type Property,
+  type MapInteractionEvent,
+  type ScoredEnvironmentalDataPoint
+} from './types';
 
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'bot';
-  timestamp: Date;
-}
-
-interface MenuOption {
-  id: string;
-  title: string;
-  questions?: string[];
-}
-
-interface UserPreference {
-  question: string;
-  answer: 'yes' | 'no' | null;
-  category: string;
-}
-
-interface EnvironmentalPreference {
-  type: string;
-  value: 'low' | 'high';
-}
-
-interface ScoredEnvironmentalDataPoint extends EnvironmentalDataPoint {
-  matchScore?: number;
-}
-
-interface ChatbotProps {
-  chatbotId?: string;
+interface ChatbotContentProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  chatbotId: string;
   handleMapQuery?: (query: string) => {
     success: boolean;
     message: string;
@@ -43,7 +31,12 @@ interface ChatbotProps {
   };
 }
 
-const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps) => {
+const ChatbotContent = ({ 
+  isOpen, 
+  onOpenChange, 
+  chatbotId,
+  handleMapQuery 
+}: ChatbotContentProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -52,8 +45,6 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
       timestamp: new Date(),
     },
   ]);
-  const [newMessage, setNewMessage] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
   const [showMainMenu, setShowMainMenu] = useState(true);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [userPreferences, setUserPreferences] = useState<UserPreference[]>([]);
@@ -61,13 +52,8 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [environmentalPreferences, setEnvironmentalPreferences] = useState<EnvironmentalPreference[]>([]);
-  const [mapInteractionEvent, setMapInteractionEvent] = useState<{
-    action: string;
-    location?: {lat: number; lng: number};
-    environmentalType?: string;
-    value?: 'low' | 'high';
-  } | null>(null);
-  const [sampleProperties, setSampleProperties] = useState([
+  const [mapInteractionEvent, setMapInteractionEvent] = useState<MapInteractionEvent | null>(null);
+  const [sampleProperties, setSampleProperties] = useState<Property[]>([
     {
       id: "1",
       title: "Modern Downtown Apartment",
@@ -237,7 +223,7 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
         const ranking = environmentalRankings.find(r => r.type === pref.type);
         if (!ranking) continue;
         
-        const value = location[pref.type as keyof EnvironmentalDataPoint] as number;
+        const value = location[pref.type as keyof typeof location] as number;
         const threshold = 5;
         
         const matchesPrefDirection = 
@@ -357,11 +343,7 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!newMessage.trim()) return;
-    
+  const handleSendMessage = (newMessage: string) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       text: newMessage,
@@ -370,7 +352,6 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
     };
     
     setMessages(prev => [...prev, userMessage]);
-    setNewMessage('');
     
     if (currentQuestion) {
       const lowerMessage = newMessage.toLowerCase();
@@ -392,6 +373,30 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
         newMessage.toLowerCase().includes('show me')) {
       handleShowRecommendations();
       return;
+    }
+    
+    // If the chatbot has a handler for map queries
+    if (handleMapQuery) {
+      const result = handleMapQuery(newMessage);
+      if (result.success) {
+        setTimeout(() => {
+          const botResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            text: result.message,
+            sender: 'bot',
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, botResponse]);
+          
+          if (result.location) {
+            setMapInteractionEvent({
+              action: 'zoomToLocation',
+              location: result.location
+            });
+          }
+        }, 1000);
+        return;
+      }
     }
     
     setTimeout(() => {
@@ -656,13 +661,6 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
     ]);
   };
 
-  const findQuietPlaces = () => {
-    if (typeof window.findQuietPlaces === 'function') {
-      return window.findQuietPlaces();
-    }
-    return null;
-  };
-
   const analyzePreferences = () => {
     const preferencesByCategory: Record<string, { yes: string[], no: string[] }> = {};
     
@@ -922,131 +920,54 @@ const Chatbot = ({ chatbotId = 'default-chatbot', handleMapQuery }: ChatbotProps
   }, [messages]);
 
   return (
-    <div className="relative z-50">
-      <button
-        onClick={() => setIsOpen(true)}
-        className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-all mb-4 mr-4"
-        aria-label="Open chat"
-      >
-        <Bot className="w-6 h-6" />
-      </button>
-
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent side="right" className="w-[350px] sm:w-[400px] p-0 flex flex-col h-full">
-          <SheetHeader className="px-4 py-3 border-b">
-            <div className="flex justify-between items-center">
-              <SheetTitle className="flex items-center text-lg">
-                <Bot className="mr-2 h-5 w-5" />
-                Home Buying Assistant
-              </SheetTitle>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setIsOpen(false)}
-                className="h-8 w-8"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </SheetHeader>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] p-3 rounded-xl ${
-                    message.sender === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-tr-none'
-                      : 'bg-muted rounded-tl-none'
-                  }`}
-                >
-                  <p className="text-sm">{message.text}</p>
-                </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-
-            {showMainMenu && (
-              <div className="space-y-2 mt-4">
-                <p className="text-sm font-medium">What would you like to know about?</p>
-                <div className="grid grid-cols-1 gap-2">
-                  {mainMenuOptions.map((option) => (
-                    <Button
-                      key={option.id}
-                      variant="outline"
-                      className="justify-start h-auto py-2 text-left"
-                      onClick={() => handleMenuSelect(option.id)}
-                    >
-                      <span>{option.title}</span>
-                      <ChevronRight className="ml-auto h-4 w-4" />
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {currentQuestion && (
-              <div className="space-y-2 mt-4">
-                <div className="flex justify-between space-x-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1 justify-center"
-                    onClick={() => handleAnswerQuestion('yes')}
-                  >
-                    <Check className="mr-2 h-4 w-4" /> Yes
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 justify-center"
-                    onClick={() => handleAnswerQuestion('no')}
-                  >
-                    <X className="mr-2 h-4 w-4" /> No
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {showRecommendations && (
-              <div className="mt-4">
-                <PropertyRecommendation properties={sampleProperties} title="Recommended Properties" />
-                <div className="mt-4 flex justify-between">
-                  <Button variant="outline" size="sm" onClick={handleResetChat}>
-                    Start Over
-                  </Button>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => {}}>
-                      <ThumbsDown className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => {}}>
-                      <ThumbsUp className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <form
-            onSubmit={handleSendMessage}
-            className="border-t p-4 flex space-x-2"
-          >
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1"
-            />
-            <Button type="submit" size="icon" disabled={!newMessage.trim()}>
-              <Send className="h-4 w-4" />
+    <Sheet open={isOpen} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-[350px] sm:w-[400px] p-0 flex flex-col h-full">
+        <SheetHeader className="px-4 py-3 border-b">
+          <div className="flex justify-between items-center">
+            <SheetTitle className="flex items-center text-lg">
+              <Bot className="mr-2 h-5 w-5" />
+              Home Buying Assistant
+            </SheetTitle>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => onOpenChange(false)}
+              className="h-8 w-8"
+            >
+              <X className="h-4 w-4" />
             </Button>
-          </form>
-        </SheetContent>
-      </Sheet>
-    </div>
+          </div>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))}
+          <div ref={messagesEndRef} />
+
+          {showMainMenu && (
+            <ChatMenu 
+              menuOptions={mainMenuOptions} 
+              onMenuSelect={handleMenuSelect} 
+            />
+          )}
+
+          {currentQuestion && (
+            <QuestionButtons onAnswerQuestion={handleAnswerQuestion} />
+          )}
+
+          {showRecommendations && (
+            <div className="mt-4">
+              <PropertyRecommendation properties={sampleProperties} title="Recommended Properties" />
+              <RecommendationActions onReset={handleResetChat} />
+            </div>
+          )}
+        </div>
+
+        <ChatInputForm onSendMessage={handleSendMessage} />
+      </SheetContent>
+    </Sheet>
   );
 };
 
-export default Chatbot;
+export default ChatbotContent;
