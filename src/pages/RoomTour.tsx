@@ -54,6 +54,23 @@ const roomData = {
       { name: "City Center Mall", distance: "0.3 miles" },
       { name: "Fresh Market Grocery", distance: "0.5 miles" }
     ]
+  },
+  futurePredictions: {
+    environmentalTrends: [
+      { year: 2025, airQuality: 7.4, greenSpace: 8.1, noiseLevel: 5.9 },
+      { year: 2030, airQuality: 8.2, greenSpace: 8.5, noiseLevel: 5.2 },
+      { year: 2035, airQuality: 8.7, greenSpace: 9.0, noiseLevel: 4.8 }
+    ],
+    populationTrends: [
+      { year: 2025, population: 13500, medianAge: 34 },
+      { year: 2030, population: 14200, medianAge: 36 },
+      { year: 2035, population: 15000, medianAge: 38 }
+    ],
+    propertyValueTrends: [
+      { year: 2025, estimatedValue: "$450,000", changePercent: "+4.2%" },
+      { year: 2030, estimatedValue: "$520,000", changePercent: "+15.5%" },
+      { year: 2035, estimatedValue: "$590,000", changePercent: "+13.5%" }
+    ]
   }
 };
 
@@ -66,6 +83,8 @@ const RoomTour = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [dataPoints, setDataPoints] = useState<{x: number, y: number, type: string, value: string}[]>([]);
+  const [showFuturePredictions, setShowFuturePredictions] = useState(false);
+  const [predictionYear, setPredictionYear] = useState(2025);
   
   // Function to handle mouse down for rotation
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -462,6 +481,106 @@ const RoomTour = () => {
       }
     }
     
+    // Draw future predictions if enabled
+    if (showFuturePredictions) {
+      const predictions = roomData.futurePredictions;
+      const yearData = predictions.environmentalTrends.find(p => p.year === predictionYear) || predictions.environmentalTrends[0];
+      const populationData = predictions.populationTrends.find(p => p.year === predictionYear) || predictions.populationTrends[0];
+      const valueData = predictions.propertyValueTrends.find(p => p.year === predictionYear) || predictions.propertyValueTrends[0];
+      
+      // Background overlay
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Future Prediction: ${predictionYear}`, canvas.width / 2, 40);
+      
+      // Draw prediction panels
+      const panels = [
+        {
+          title: "Environmental Outlook",
+          values: [
+            { label: "Air Quality", value: `${yearData.airQuality}/10`, color: yearData.airQuality > 7 ? '#4CAF50' : '#FFC107' },
+            { label: "Green Space", value: `${yearData.greenSpace}/10`, color: yearData.greenSpace > 7 ? '#4CAF50' : '#FFC107' },
+            { label: "Noise Level", value: `${yearData.noiseLevel}/10`, color: yearData.noiseLevel < 5 ? '#4CAF50' : '#FFC107' }
+          ],
+          x: 120,
+          y: 80
+        },
+        {
+          title: "Population Trends",
+          values: [
+            { label: "Population", value: populationData.population.toLocaleString(), color: '#64B5F6' },
+            { label: "Median Age", value: `${populationData.medianAge} years`, color: '#64B5F6' }
+          ],
+          x: 320,
+          y: 80
+        },
+        {
+          title: "Property Value",
+          values: [
+            { label: "Estimated Value", value: valueData.estimatedValue, color: '#9575CD' },
+            { label: "Change", value: valueData.changePercent, color: valueData.changePercent.startsWith('+') ? '#4CAF50' : '#F44336' }
+          ],
+          x: 220,
+          y: 220
+        }
+      ];
+      
+      // Draw each prediction panel
+      panels.forEach(panel => {
+        // Panel background
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.fillRect(panel.x - 90, panel.y - 20, 180, 30 + panel.values.length * 30);
+        
+        // Panel title
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(panel.title, panel.x, panel.y);
+        
+        // Panel values
+        ctx.font = '14px Arial';
+        panel.values.forEach((item, index) => {
+          ctx.textAlign = 'left';
+          ctx.fillText(item.label, panel.x - 80, panel.y + 20 + (index * 30));
+          
+          ctx.textAlign = 'right';
+          ctx.fillStyle = item.color;
+          ctx.fillText(item.value, panel.x + 80, panel.y + 20 + (index * 30));
+          ctx.fillStyle = '#ffffff';
+        });
+      });
+      
+      // Year selection buttons
+      const years = [2025, 2030, 2035];
+      const buttonWidth = 60;
+      const buttonSpacing = 20;
+      const startButtonX = (canvas.width - (buttonWidth * years.length + buttonSpacing * (years.length - 1))) / 2;
+      const buttonY = canvas.height - 50;
+      
+      years.forEach((year, index) => {
+        const x = startButtonX + (buttonWidth + buttonSpacing) * index;
+        
+        // Button background
+        ctx.fillStyle = year === predictionYear ? '#9b87f5' : 'rgba(255, 255, 255, 0.3)';
+        ctx.fillRect(x, buttonY, buttonWidth, 30);
+        
+        // Button text
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(year.toString(), x + buttonWidth / 2, buttonY + 15);
+        
+        // Store button coordinates for click handling
+        // This will be used in the click handler
+      });
+    }
+    
     // Room name - always show
     const currentRoom = roomData.rooms.find(room => room.id === activeRoom);
     if (currentRoom) {
@@ -474,9 +593,65 @@ const RoomTour = () => {
     }
   };
   
+  // Function to handle canvas click for year selection in future predictions
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!showFuturePredictions) return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Check if the click is on one of the year buttons
+    const years = [2025, 2030, 2035];
+    const buttonWidth = 60;
+    const buttonSpacing = 20;
+    const startButtonX = (canvas.width - (buttonWidth * years.length + buttonSpacing * (years.length - 1))) / 2;
+    const buttonY = canvas.height - 50;
+    
+    years.forEach((year, index) => {
+      const buttonX = startButtonX + (buttonWidth + buttonSpacing) * index;
+      
+      if (
+        x >= buttonX && 
+        x <= buttonX + buttonWidth && 
+        y >= buttonY && 
+        y <= buttonY + 30
+      ) {
+        setPredictionYear(year);
+      }
+    });
+  };
+  
   // Handle Chatbot query about the room
   const handleChatbotRoomQuery = (query: string) => {
     const queryLower = query.toLowerCase();
+    
+    // Handle future prediction queries
+    if (queryLower.includes('future') || queryLower.includes('predict') || queryLower.includes('forecast')) {
+      const year = queryLower.includes('2025') ? 2025 : 
+                  queryLower.includes('2030') ? 2030 : 
+                  queryLower.includes('2035') ? 2035 : 2025;
+      
+      setPredictionYear(year);
+      setShowFuturePredictions(true);
+      
+      return {
+        success: true,
+        message: `Showing future predictions for ${year}. You can view environmental trends, population changes, and property value forecasts.`,
+      };
+    }
+    
+    // Reset future predictions view if asked
+    if (queryLower.includes('reset') || queryLower.includes('return') || queryLower.includes('back to room')) {
+      setShowFuturePredictions(false);
+      return {
+        success: true,
+        message: "Returning to normal room view.",
+      };
+    }
     
     if (queryLower.includes('noise') || queryLower.includes('quiet')) {
       return {
@@ -513,16 +688,23 @@ const RoomTour = () => {
       };
     }
     
+    if (queryLower.includes('property value') || queryLower.includes('worth') || queryLower.includes('price')) {
+      return {
+        success: true,
+        message: `The current property value is estimated around $420,000. By ${roomData.futurePredictions.propertyValueTrends[1].year}, it's predicted to be worth ${roomData.futurePredictions.propertyValueTrends[1].estimatedValue}.`,
+      };
+    }
+    
     return {
       success: false,
-      message: "I don't have specific information about that. You can ask about noise levels, schools, hospitals, crime rates, or demographics in this area.",
+      message: "I don't have specific information about that. You can ask about noise levels, schools, hospitals, crime rates, demographics, or future predictions.",
     };
   };
   
   // Draw when component mounts or when activeRoom changes
   useEffect(() => {
     draw3DRoom();
-  }, [activeRoom, showData, dataCategory, rotation, dataPoints]);
+  }, [activeRoom, showData, dataCategory, rotation, dataPoints, showFuturePredictions, predictionYear]);
   
   return (
     <div className="min-h-screen">
@@ -546,6 +728,15 @@ const RoomTour = () => {
                     <Button 
                       variant="outline" 
                       size="sm"
+                      onClick={() => setShowFuturePredictions(!showFuturePredictions)}
+                      className="flex items-center gap-1"
+                    >
+                      {showFuturePredictions ? "Exit Future View" : "Future Predictions"}
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      size="sm"
                       onClick={() => setShowData(!showData)}
                       className="flex items-center gap-1"
                     >
@@ -553,7 +744,7 @@ const RoomTour = () => {
                       {showData ? 'Hide Data' : 'Show Data'}
                     </Button>
                     
-                    {showData && (
+                    {showData && !showFuturePredictions && (
                       <div className="flex gap-1">
                         <Badge
                           variant={dataCategory === 'environmental' ? 'default' : 'outline'}
@@ -596,6 +787,7 @@ const RoomTour = () => {
                     width={600}
                     height={400}
                     className="w-full h-full"
+                    onClick={handleCanvasClick}
                   />
                   
                   {/* Drag instructions overlay */}
@@ -604,9 +796,15 @@ const RoomTour = () => {
                     Click and drag to rotate view
                   </div>
                   
-                  {showData && (
+                  {showData && !showFuturePredictions && (
                     <div className="absolute top-2 left-2 bg-primary/80 text-white text-xs px-2 py-1 rounded">
                       Data points are highlighted in purple
+                    </div>
+                  )}
+                  
+                  {showFuturePredictions && (
+                    <div className="absolute top-2 left-2 bg-primary/80 text-white text-xs px-2 py-1 rounded">
+                      Future prediction mode - Click on years to change view
                     </div>
                   )}
                 </div>
@@ -619,6 +817,7 @@ const RoomTour = () => {
                         value={room.id}
                         onClick={() => setActiveRoom(room.id)}
                         className={`flex items-center gap-1 ${activeRoom === room.id ? 'bg-primary text-primary-foreground' : ''}`}
+                        disabled={showFuturePredictions}
                       >
                         <Home size={14} />
                         {room.name}
@@ -723,6 +922,23 @@ const RoomTour = () => {
                         ></div>
                       </div>
                     </div>
+                    
+                    <div className="p-3 bg-gray-100 rounded-md">
+                      <h4 className="font-medium mb-2">Future Environmental Trends</h4>
+                      
+                      <div className="space-y-1">
+                        {roomData.futurePredictions.environmentalTrends.map(trend => (
+                          <div key={trend.year} className="flex items-center justify-between text-sm">
+                            <span>{trend.year}</span>
+                            <div className="flex gap-2">
+                              <span className="text-green-500">Air: {trend.airQuality}</span>
+                              <span className="text-blue-500">Green: {trend.greenSpace}</span>
+                              <span className="text-amber-500">Noise: {trend.noiseLevel}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </TabsContent>
                   
                   <TabsContent value="demographics">
@@ -761,6 +977,24 @@ const RoomTour = () => {
                       <div className="p-3 bg-gray-100 rounded-md">
                         <div className="font-medium">Education</div>
                         <div className="text-primary font-semibold">{roomData.demographics.educationLevel}</div>
+                      </div>
+                      
+                      <div className="p-3 bg-gray-100 rounded-md">
+                        <h4 className="font-medium mb-2">Future Population Trends</h4>
+                        
+                        {roomData.futurePredictions.populationTrends.map(trend => (
+                          <div key={trend.year} className="mb-2">
+                            <div className="font-medium text-sm">{trend.year}</div>
+                            <div className="flex justify-between text-sm">
+                              <span>Population:</span>
+                              <span className="font-semibold">{trend.population.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span>Median Age:</span>
+                              <span className="font-semibold">{trend.medianAge} years</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </TabsContent>
@@ -824,6 +1058,22 @@ const RoomTour = () => {
                           </div>
                         ))}
                       </div>
+                      
+                      <div className="p-3 bg-gray-100 rounded-md">
+                        <h4 className="font-medium mb-2">Property Value Forecast</h4>
+                        
+                        {roomData.futurePredictions.propertyValueTrends.map(trend => (
+                          <div key={trend.year} className="flex justify-between items-center mb-1">
+                            <span>{trend.year}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">{trend.estimatedValue}</span>
+                              <span className={trend.changePercent.startsWith('+') ? 'text-green-500' : 'text-red-500'}>
+                                {trend.changePercent}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -834,15 +1084,17 @@ const RoomTour = () => {
         
         <div className="text-center py-8">
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-4">
-            Ask our AI assistant about neighborhood insights or to learn more about the environmental factors in this area.
+            Ask our AI assistant about neighborhood insights, environmental factors, or to see future predictions for this area.
           </p>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Try asking about noise levels, schools, hospitals, or demographics!
+            Try asking about future predictions, property values, demographics, or environmental trends!
           </p>
         </div>
       </div>
       
-      <Chatbot chatbotId="room-tour-chatbot" handleMapQuery={handleChatbotRoomQuery} />
+      <div className="fixed bottom-8 right-8 z-50">
+        <Chatbot chatbotId="room-tour-chatbot" handleMapQuery={handleChatbotRoomQuery} />
+      </div>
       <Footer />
     </div>
   );
