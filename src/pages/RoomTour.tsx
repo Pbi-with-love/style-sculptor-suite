@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import Chatbot from '../components/Chatbot';
+import Chatbot from '../components/chatbot';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -810,20 +810,22 @@ const RoomTour = () => {
                 </div>
                 
                 <div className="mt-4">
-                  <TabsList className="w-full">
-                    {roomData.rooms.map(room => (
-                      <TabsTrigger 
-                        key={room.id} 
-                        value={room.id}
-                        onClick={() => setActiveRoom(room.id)}
-                        className={`flex items-center gap-1 ${activeRoom === room.id ? 'bg-primary text-primary-foreground' : ''}`}
-                        disabled={showFuturePredictions}
-                      >
-                        <Home size={14} />
-                        {room.name}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+                  <Tabs defaultValue={activeRoom}>
+                    <TabsList className="w-full">
+                      {roomData.rooms.map(room => (
+                        <TabsTrigger 
+                          key={room.id} 
+                          value={room.id}
+                          onClick={() => setActiveRoom(room.id)}
+                          className={`flex items-center gap-1`}
+                          disabled={showFuturePredictions}
+                        >
+                          <Home size={14} />
+                          {room.name}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
                 </div>
               </CardContent>
             </Card>

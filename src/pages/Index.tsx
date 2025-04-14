@@ -1,10 +1,9 @@
-
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import Stats from '../components/Stats';
 import Properties from '../components/Properties';
 import Footer from '../components/Footer';
-import Chatbot from '../components/Chatbot';
+import Chatbot from '../components/chatbot';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import PropertyMapContainer from '../components/PropertyMapContainer';
 import { environmentalRankings } from '../data/environmentalData';

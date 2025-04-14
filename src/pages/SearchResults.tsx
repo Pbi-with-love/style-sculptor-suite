@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import PropertyMapContainer from '../components/PropertyMapContainer';
 import PropertyRecommendation from '../components/PropertyRecommendation';
-import Chatbot from '../components/Chatbot';
+import Chatbot from '../components/chatbot';
 import Footer from '../components/Footer';
 import SearchHeader from '../components/SearchHeader';
 import { findLocationsByEnvironmentalCriteria } from '../data/environmentalData';
