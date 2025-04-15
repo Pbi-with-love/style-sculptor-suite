@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { RoomData } from './types';
 import EnvironmentalDataView from './EnvironmentalDataView';
@@ -78,14 +79,18 @@ const RoomCanvas = ({
 
         // Draw hotspots
         if (!showFuturePredictions) {
-          roomData.rooms.find(room => room.id === activeRoom)?.hotspots?.forEach(hotspot => {
-            if (showData && hotspot.dataField === dataCategory) {
-              const hotspotX = hotspot.x;
-              const hotspotY = hotspot.y;
-              const dataValue = roomData.environmentalData.noiseLevel; // Example data value
-              renderHotspot(ctx, hotspotX, hotspotY, hotspot.label, 100);
-            }
-          });
+          const currentRoom = roomData.rooms.find(room => room.id === activeRoom);
+          if (currentRoom && 'hotspots' in currentRoom) {
+            const hotspotsArray = (currentRoom as any).hotspots || [];
+            hotspotsArray.forEach((hotspot: any) => {
+              if (showData && hotspot.dataField === dataCategory) {
+                const hotspotX = hotspot.x;
+                const hotspotY = hotspot.y;
+                const dataValue = roomData.environmentalData.noiseLevel; // Example data value
+                renderHotspot(ctx, hotspotX, hotspotY, hotspot.label, 100);
+              }
+            });
+          }
         }
 
         // Restore the transformation matrix

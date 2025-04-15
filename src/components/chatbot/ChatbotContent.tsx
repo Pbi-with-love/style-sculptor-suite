@@ -1,8 +1,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Bot, X } from 'lucide-react';
+import { Bot, X, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import ChatMessage from './ChatMessage';
 import ChatMenu from './ChatMenu';
 import QuestionButtons from './QuestionButtons';
@@ -10,6 +11,12 @@ import ChatInputForm from './ChatInputForm';
 import RecommendationActions from './RecommendationActions';
 import PropertyRecommendation from '../PropertyRecommendation';
 import { environmentalRankings, environmentalData } from '../../data/environmentalData';
+import { 
+  parseEnvironmentalQuery, 
+  convertEnvironmentalQuestionToPreference,
+  matchPropertiesToPreferences,
+  propertyData
+} from './ChatbotService';
 import { 
   type Message, 
   type MenuOption, 
@@ -40,7 +47,7 @@ const ChatbotContent = ({
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Welcome to your Home Buying Assistant! How can I help you find your dream property today?',
+      text: 'Welcome to your Home Buying Assistant! How can I help you find your dream property today? You can ask me about environmental factors like "Show me areas with low noise" or type "show recommendations" after answering some questions.',
       sender: 'bot',
       timestamp: new Date(),
     },
@@ -53,32 +60,7 @@ const ChatbotContent = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [environmentalPreferences, setEnvironmentalPreferences] = useState<EnvironmentalPreference[]>([]);
   const [mapInteractionEvent, setMapInteractionEvent] = useState<MapInteractionEvent | null>(null);
-  const [sampleProperties, setSampleProperties] = useState<Property[]>([
-    {
-      id: "1",
-      title: "Modern Downtown Apartment",
-      description: "A spacious 3-bedroom apartment with smart home features in the heart of downtown.",
-      price: "$520,000",
-      imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
-      address: "123 Main St, Downtown District"
-    },
-    {
-      id: "2",
-      title: "Suburban Family Home",
-      description: "Beautiful 4-bedroom house with a backyard and smart security system in a family-friendly neighborhood.",
-      price: "$650,000",
-      imageUrl: "https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
-      address: "456 Oak Lane, Greenview Heights"
-    },
-    {
-      id: "3",
-      title: "Riverside Condo",
-      description: "Modern 2-bedroom condo with river views, close to public transportation and green spaces.",
-      price: "$475,000",
-      imageUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aG91c2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-      address: "789 River Road, Riverside Community"
-    }
-  ]);
+  const [sampleProperties, setSampleProperties] = useState<Property[]>(propertyData.slice(0, 3));
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const mainMenuOptions: MenuOption[] = [
@@ -148,70 +130,6 @@ const ChatbotContent = ({
     }
   ];
 
-  const parseEnvironmentalQuery = (query: string): EnvironmentalPreference | null => {
-    const queryLower = query.toLowerCase();
-    
-    for (const ranking of environmentalRankings) {
-      const factorKey = ranking.type;
-      const factorLabel = ranking.label.toLowerCase();
-      
-      if (queryLower.includes(factorLabel) || queryLower.includes(factorKey.toLowerCase())) {
-        let value: 'high' | 'low' = 'low';
-        
-        if (ranking.isHigherBetter) {
-          value = 'high';
-          
-          if (
-            queryLower.includes('low ' + factorLabel) ||
-            queryLower.includes('less ' + factorLabel) ||
-            queryLower.includes('minimal ' + factorLabel) ||
-            queryLower.includes('poor ' + factorLabel)
-          ) {
-            value = 'low';
-          }
-        } else {
-          value = 'low';
-          
-          if (
-            queryLower.includes('high ' + factorLabel) ||
-            queryLower.includes('more ' + factorLabel) ||
-            queryLower.includes('lots of ' + factorLabel)
-          ) {
-            value = 'high';
-          }
-        }
-        
-        return { type: factorKey, value };
-      }
-    }
-    
-    if (queryLower.includes('quiet') || queryLower.includes('peaceful')) {
-      return { type: 'noiseLevel', value: 'low' };
-    }
-    
-    if (queryLower.includes('safe') || queryLower.includes('security')) {
-      return { type: 'crimeRate', value: 'low' };
-    }
-    
-    if (queryLower.includes('clean air') || queryLower.includes('fresh air')) {
-      return { type: 'pollution', value: 'low' };
-    }
-    
-    if (queryLower.includes('park') || queryLower.includes('nature') || queryLower.includes('green')) {
-      return { type: 'greenSpaceAccess', value: 'high' };
-    }
-    
-    if (queryLower.includes('education') || queryLower.includes('school')) {
-      return { type: 'schoolQuality', value: 'high' };
-    }
-    
-    if (queryLower.includes('traffic') || queryLower.includes('commute')) {
-      return { type: 'trafficCongestion', value: 'low' };
-    }
-    
-    return null;
-  };
-
   const findBestLocationsForPreferences = (preferences: EnvironmentalPreference[]): ScoredEnvironmentalDataPoint[] => {
     if (preferences.length === 0) return [];
     
@@ -253,6 +171,12 @@ const ChatbotContent = ({
     
     if (!preference) {
       return false;
+    }
+    
+    // Handle the recommendation request
+    if (preference.type === 'recommendation') {
+      handleShowRecommendations();
+      return true;
     }
     
     const ranking = environmentalRankings.find(r => r.type === preference.type);
@@ -364,14 +288,7 @@ const ChatbotContent = ({
       }
     }
     
-    if (handleEnvironmentalQuestion(newMessage)) {
-      return;
-    }
-    
-    if (newMessage.toLowerCase().includes('recommend') || 
-        newMessage.toLowerCase().includes('suggestion') || 
-        newMessage.toLowerCase().includes('show me')) {
-      handleShowRecommendations();
+    if (handleEnvironmentalQuery(newMessage)) {
       return;
     }
     
@@ -402,7 +319,7 @@ const ChatbotContent = ({
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I understand you're looking for specific information. To help you better, please use the menu options below to tell me more about your preferences, or simply ask me about environmental factors like 'Show me areas with low noise' or 'Find neighborhoods with good schools'.",
+        text: "I understand you're looking for specific information. To help you better, please use the menu options below to tell me more about your preferences, or simply ask me about environmental factors like 'Show me areas with low noise' or 'Find neighborhoods with good schools'. After answering some questions, type 'show recommendations' to see properties that match your preferences.",
         sender: 'bot',
         timestamp: new Date(),
       };
@@ -490,7 +407,7 @@ const ChatbotContent = ({
       } else {
         botMessage = {
           id: Date.now().toString(),
-          text: "Thanks for your answers! Would you like to explore another category or see recommendations based on what you've told me so far?",
+          text: "Thanks for your answers! Would you like to explore another category or type 'show recommendations' to see properties that match your preferences?",
           sender: 'bot',
           timestamp: new Date(),
         };
@@ -503,42 +420,11 @@ const ChatbotContent = ({
     }
   };
 
-  const convertEnvironmentalQuestionToPreference = (
-    question: string, 
-    answer: 'yes' | 'no'
-  ): EnvironmentalPreference | null => {
-    if (question.includes('crime rates')) {
-      return { type: 'crimeRate', value: answer === 'yes' ? 'low' : 'high' };
-    }
-    
-    if (question.includes('quiet neighborhoods') || question.includes('noise levels')) {
-      return { type: 'noiseLevel', value: answer === 'yes' ? 'low' : 'high' };
-    }
-    
-    if (question.includes('air quality')) {
-      return { type: 'pollution', value: answer === 'yes' ? 'low' : 'high' };
-    }
-    
-    if (question.includes('traffic congestion')) {
-      return { type: 'trafficCongestion', value: answer === 'yes' ? 'low' : 'high' };
-    }
-    
-    if (question.includes('parks and green spaces')) {
-      return { type: 'greenSpaceAccess', value: answer === 'yes' ? 'high' : 'low' };
-    }
-    
-    if (question.includes('good schools')) {
-      return { type: 'schoolQuality', value: answer === 'yes' ? 'high' : 'low' };
-    }
-    
-    return null;
-  };
-
   const handleShowRecommendations = () => {
     if (userPreferences.length === 0 && environmentalPreferences.length === 0) {
       const botMessage: Message = {
         id: Date.now().toString(),
-        text: "Please answer some questions about your preferences before I can show recommendations.",
+        text: "Please answer some questions about your preferences before I can show recommendations. Click on a category below to get started!",
         sender: 'bot',
         timestamp: new Date(),
       };
@@ -557,12 +443,12 @@ const ChatbotContent = ({
     
     const analysis = analyzePreferences();
     
-    const matchedProperties = matchPropertiesToPreferences(analysis);
+    const matchedProperties = matchPropertiesToPreferences(analysis, environmentalPreferences);
     
     setTimeout(() => {
       let recommendationText = "Based on your preferences, I've analyzed what matters most to you. ";
       
-      if (analysis.budget === 'high') {
+      if (analysis.budget === 'high' || analysis.budget === 'premium') {
         recommendationText += "You're looking for higher-end properties ";
       } else {
         recommendationText += "You're looking for moderately priced homes ";
@@ -570,8 +456,10 @@ const ChatbotContent = ({
       
       if (analysis.location === 'urban') {
         recommendationText += "in urban areas. ";
-      } else {
+      } else if (analysis.location === 'suburban') {
         recommendationText += "in suburban neighborhoods. ";
+      } else if (analysis.location === 'rural') {
+        recommendationText += "in rural settings. ";
       }
       
       if (environmentalPreferences.length > 0) {
@@ -582,13 +470,15 @@ const ChatbotContent = ({
           if (!ranking) return '';
           
           return `${pref.value} ${ranking.label.toLowerCase()}`;
-        });
+        }).filter(desc => desc !== '');
         
-        recommendationText += prefDescriptions.join(', ') + ". ";
-        
-        const bestLocations = findBestLocationsForPreferences(environmentalPreferences);
-        if (bestLocations.length > 0) {
-          recommendationText += `The ${bestLocations[0].name} area is an excellent match for these preferences. `;
+        if (prefDescriptions.length > 0) {
+          recommendationText += prefDescriptions.join(', ') + ". ";
+          
+          const bestLocations = findBestLocationsForPreferences(environmentalPreferences);
+          if (bestLocations.length > 0) {
+            recommendationText += `The ${bestLocations[0].name} area is an excellent match for these preferences. `;
+          }
         }
       }
       
@@ -596,15 +486,20 @@ const ChatbotContent = ({
         recommendationText += "Family-friendly communities seem important to you. ";
       }
       
-      if (analysis.environment === 'green spaces priority') {
-        recommendationText += "Access to parks and green spaces is a priority for you. ";
+      if (analysis.environment === 'green spaces priority' || analysis.environment === 'waterfront' || analysis.environment === 'natural setting') {
+        recommendationText += "Access to nature and green spaces is a priority for you. ";
       }
       
-      if (analysis.technology === 'tech-forward') {
+      if (analysis.technology === 'tech-forward' || analysis.technology === 'high-end smart home') {
         recommendationText += "You value smart home technology and modern amenities. ";
       }
       
-      recommendationText += "Here are three properties that best match your criteria:";
+      if (matchedProperties.length > 0) {
+        const topProperty = matchedProperties[0];
+        recommendationText += `I found ${matchedProperties.length} properties that match your criteria, with the top match being ${topProperty.title} (${topProperty.matchScore}% match). Here are my recommendations:`;
+      } else {
+        recommendationText += "Here are three properties that best match your criteria:";
+      }
       
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -616,13 +511,17 @@ const ChatbotContent = ({
       
       setSampleProperties(matchedProperties);
       setShowRecommendations(true);
+      
+      toast.info("Pro tip: Try the thumbs up/down buttons to help improve recommendations!", {
+        icon: <Info className="h-4 w-4" />
+      });
     }, 1000);
   };
 
   const handleResetChat = () => {
     setMessages([{
       id: '1',
-      text: 'Welcome to your Home Buying Assistant! How can I help you find your dream property today?',
+      text: 'Welcome to your Home Buying Assistant! How can I help you find your dream property today? You can ask me about environmental factors like "Show me areas with low noise" or type "show recommendations" after answering some questions.',
       sender: 'bot',
       timestamp: new Date(),
     }]);
@@ -633,32 +532,9 @@ const ChatbotContent = ({
     setCurrentQuestion(null);
     setShowRecommendations(false);
     setMapInteractionEvent(null);
-    setSampleProperties([
-      {
-        id: "1",
-        title: "Modern Downtown Apartment",
-        description: "A spacious 3-bedroom apartment with smart home features in the heart of downtown.",
-        price: "$520,000",
-        imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
-        address: "123 Main St, Downtown District"
-      },
-      {
-        id: "2",
-        title: "Suburban Family Home",
-        description: "Beautiful 4-bedroom house with a backyard and smart security system in a family-friendly neighborhood.",
-        price: "$650,000",
-        imageUrl: "https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
-        address: "456 Oak Lane, Greenview Heights"
-      },
-      {
-        id: "3",
-        title: "Riverside Condo",
-        description: "Modern 2-bedroom condo with river views, close to public transportation and green spaces.",
-        price: "$475,000",
-        imageUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aG91c2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-        address: "789 River Road, Riverside Community"
-      }
-    ]);
+    setSampleProperties(propertyData.slice(0, 3));
+    
+    toast.success("Chat has been reset. Let's start fresh!");
   };
 
   const analyzePreferences = () => {
@@ -751,6 +627,8 @@ const ChatbotContent = ({
     
     if (environmentalPreferences.length > 0) {
       environmentalPreferences.forEach(pref => {
+        if (pref.type === 'recommendation') return; // Skip recommendation preference
+        
         const ranking = environmentalRankings.find(r => r.type === pref.type);
         if (!ranking) return;
         
@@ -760,143 +638,6 @@ const ChatbotContent = ({
     }
     
     return analysis;
-  };
-
-  const matchPropertiesToPreferences = (analysis: Record<string, string>) => {
-    const allProperties = [
-      {
-        id: "1",
-        title: "Modern Downtown Apartment",
-        description: "A spacious 3-bedroom apartment with smart home features in the heart of downtown.",
-        price: "$520,000",
-        imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
-        address: "123 Main St, Downtown District",
-        attributes: {
-          budget: "high",
-          location: "urban",
-          size: "large",
-          age: "new",
-          community: "diverse",
-          education: "high priority",
-          environment: "limited green space",
-          lifestyle: "entertainment-focused",
-          mobility: "public transport dependent",
-          technology: "tech-forward",
-          crimeRate: "high",
-          noiseLevel: "high",
-          pollution: "high",
-          trafficCongestion: "high",
-          greenSpaceAccess: "low",
-          schoolQuality: "high"
-        }
-      },
-      {
-        id: "2",
-        title: "Suburban Family Home",
-        description: "Beautiful 4-bedroom house with a backyard and smart security system in a family-friendly neighborhood.",
-        price: "$650,000",
-        imageUrl: "https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
-        address: "456 Oak Lane, Greenview Heights",
-        attributes: {
-          budget: "high",
-          location: "suburban",
-          size: "large",
-          age: "new",
-          community: "family-oriented",
-          education: "high priority",
-          environment: "green spaces priority",
-          lifestyle: "community-focused",
-          mobility: "car dependent",
-          technology: "moderate tech",
-          crimeRate: "low",
-          noiseLevel: "low",
-          pollution: "low",
-          trafficCongestion: "moderate",
-          greenSpaceAccess: "high",
-          schoolQuality: "high"
-        }
-      },
-      {
-        id: "3",
-        title: "Riverside Condo",
-        description: "Modern 2-bedroom condo with river views, close to public transportation and green spaces.",
-        price: "$475,000",
-        imageUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aG91c2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-        address: "789 River Road, Riverside Community",
-        attributes: {
-          budget: "moderate",
-          location: "urban",
-          size: "small to medium",
-          age: "established",
-          community: "mixed",
-          education: "moderate",
-          environment: "green spaces priority",
-          lifestyle: "balanced",
-          mobility: "public transport dependent",
-          technology: "basic",
-          crimeRate: "low",
-          noiseLevel: "moderate",
-          pollution: "low",
-          trafficCongestion: "moderate",
-          greenSpaceAccess: "high",
-          schoolQuality: "high"
-        }
-      },
-      {
-        id: "4",
-        title: "Smart Urban Loft",
-        description: "Fully automated 1-bedroom loft with cutting-edge smart home technology in a tech hub district.",
-        price: "$490,000",
-        imageUrl: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=60",
-        address: "101 Tech Blvd, Innovation District",
-        attributes: {
-          budget: "moderate",
-          location: "urban",
-          size: "small to medium",
-          age: "new",
-          community: "professional",
-          education: "moderate",
-          environment: "limited green space",
-          lifestyle: "entertainment-focused",
-          mobility: "walkability priority",
-          technology: "tech-forward",
-          crimeRate: "moderate",
-          noiseLevel: "high",
-          pollution: "moderate",
-          trafficCongestion: "high",
-          greenSpaceAccess: "low",
-          schoolQuality: "moderate"
-        }
-      },
-      {
-        id: "5",
-        title: "Green Community Townhouse",
-        description: "Energy-efficient 3-bedroom townhouse in a walkable community with bike paths and parks",
-        price: "$580,000",
-        imageUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
-        address: "234 Eco Lane, Green Valley",
-        attributes: {
-          budget: "moderate",
-          location: "suburban",
-          size: "medium",
-          age: "new",
-          community: "eco-conscious",
-          education: "high priority",
-          environment: "green spaces priority",
-          lifestyle: "healthy living",
-          mobility: "bike-friendly preference",
-          technology: "eco-tech",
-          crimeRate: "low",
-          noiseLevel: "low",
-          pollution: "very low",
-          trafficCongestion: "low",
-          greenSpaceAccess: "very high",
-          schoolQuality: "high"
-        }
-      }
-    ];
-    
-    return allProperties.slice(0, 3);
   };
 
   useEffect(() => {
