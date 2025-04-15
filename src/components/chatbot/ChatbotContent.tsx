@@ -288,7 +288,20 @@ const ChatbotContent = ({
       }
     }
     
-    if (handleEnvironmentalQuery(newMessage)) {
+    // Check for recommendation requests
+    const lowerMessage = newMessage.toLowerCase();
+    if (
+      lowerMessage.includes('show recommend') || 
+      lowerMessage.includes('recommend') || 
+      lowerMessage.includes('give me prop') ||
+      lowerMessage.includes('find property') ||
+      lowerMessage.includes('suggest home')
+    ) {
+      handleShowRecommendations();
+      return;
+    }
+    
+    if (handleEnvironmentalQuestion(newMessage)) {
       return;
     }
     

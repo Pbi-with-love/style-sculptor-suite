@@ -1,8 +1,7 @@
-
 import { environmentalRankings } from '../../data/environmentalData';
 import { type EnvironmentalPreference } from './types';
 
-// Enhanced property matching data
+// Enhanced property matching data with more details
 export const propertyData = [
   {
     id: "1",
@@ -27,7 +26,12 @@ export const propertyData = [
       pollution: "high",
       trafficCongestion: "high",
       greenSpaceAccess: "low",
-      schoolQuality: "high"
+      schoolQuality: "high",
+      bedrooms: 3,
+      bathrooms: 2,
+      squareFeet: 1450,
+      yearBuilt: 2019,
+      highlights: ["Smart Home", "City View", "Fitness Center", "Doorman"]
     }
   },
   {
@@ -53,7 +57,12 @@ export const propertyData = [
       pollution: "low",
       trafficCongestion: "moderate",
       greenSpaceAccess: "high",
-      schoolQuality: "high"
+      schoolQuality: "high",
+      bedrooms: 4,
+      bathrooms: 3.5,
+      squareFeet: 2800,
+      yearBuilt: 2018,
+      highlights: ["Large Backyard", "Smart Security", "Basement", "Garage"]
     }
   },
   {
@@ -79,7 +88,12 @@ export const propertyData = [
       pollution: "low",
       trafficCongestion: "moderate",
       greenSpaceAccess: "high",
-      schoolQuality: "high"
+      schoolQuality: "high",
+      bedrooms: 2,
+      bathrooms: 2,
+      squareFeet: 1200,
+      yearBuilt: 2015,
+      highlights: ["River View", "Balcony", "Community Pool", "Gated"]
     }
   },
   {
@@ -105,7 +119,12 @@ export const propertyData = [
       pollution: "moderate",
       trafficCongestion: "high",
       greenSpaceAccess: "low",
-      schoolQuality: "moderate"
+      schoolQuality: "moderate",
+      bedrooms: 1,
+      bathrooms: 1.5,
+      squareFeet: 950,
+      yearBuilt: 2021,
+      highlights: ["Smart Home", "Voice Control", "High Ceilings", "Industrial Style"]
     }
   },
   {
@@ -131,7 +150,12 @@ export const propertyData = [
       pollution: "very low",
       trafficCongestion: "low",
       greenSpaceAccess: "very high",
-      schoolQuality: "high"
+      schoolQuality: "high",
+      bedrooms: 3,
+      bathrooms: 2.5,
+      squareFeet: 1850,
+      yearBuilt: 2020,
+      highlights: ["Solar Panels", "Energy Efficient", "Community Garden", "EV Charger"]
     }
   },
   {
@@ -157,7 +181,12 @@ export const propertyData = [
       pollution: "moderate",
       trafficCongestion: "moderate",
       greenSpaceAccess: "moderate",
-      schoolQuality: "very high"
+      schoolQuality: "very high",
+      bedrooms: 4,
+      bathrooms: 3,
+      squareFeet: 3200,
+      yearBuilt: 1910,
+      highlights: ["Historic", "Renovated", "Fireplace", "High Ceilings"]
     }
   },
   {
@@ -183,7 +212,12 @@ export const propertyData = [
       pollution: "very low",
       trafficCongestion: "low",
       greenSpaceAccess: "very high",
-      schoolQuality: "excellent"
+      schoolQuality: "excellent",
+      bedrooms: 5,
+      bathrooms: 4.5,
+      squareFeet: 4800,
+      yearBuilt: 2022,
+      highlights: ["Waterfront", "Private Dock", "Home Theater", "Wine Cellar"]
     }
   },
   {
@@ -209,7 +243,12 @@ export const propertyData = [
       pollution: "very low",
       trafficCongestion: "very low",
       greenSpaceAccess: "very high",
-      schoolQuality: "moderate"
+      schoolQuality: "moderate",
+      bedrooms: 2,
+      bathrooms: 1,
+      squareFeet: 1100,
+      yearBuilt: 2017,
+      highlights: ["Mountain Views", "Solar Power", "Hiking Trails", "Wood Stove"]
     }
   },
   {
@@ -235,7 +274,12 @@ export const propertyData = [
       pollution: "moderate",
       trafficCongestion: "high",
       greenSpaceAccess: "low",
-      schoolQuality: "moderate"
+      schoolQuality: "moderate",
+      bedrooms: 0,
+      bathrooms: 1,
+      squareFeet: 450,
+      yearBuilt: 2021,
+      highlights: ["Space Saving", "Transforming Furniture", "Gym Access", "Rooftop Garden"]
     }
   },
   {
@@ -261,10 +305,224 @@ export const propertyData = [
       pollution: "very low",
       trafficCongestion: "low",
       greenSpaceAccess: "high",
-      schoolQuality: "high"
+      schoolQuality: "high",
+      bedrooms: 4,
+      bathrooms: 3,
+      squareFeet: 2500,
+      yearBuilt: 2020,
+      highlights: ["Solar Power", "Energy Storage", "Garden", "Rainwater Collection"]
+    }
+  },
+  {
+    id: "11",
+    title: "Downtown Penthouse",
+    description: "Luxurious 3-bedroom penthouse with panoramic city views and private rooftop terrace",
+    price: "$1,850,000",
+    imageUrl: "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bHV4dXJ5JTIwYXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
+    address: "1000 Skyline Ave, City Center",
+    attributes: {
+      budget: "premium",
+      location: "urban",
+      size: "large",
+      age: "new",
+      community: "exclusive",
+      education: "high priority",
+      environment: "limited green space",
+      lifestyle: "luxury",
+      mobility: "walkability priority",
+      technology: "high-end smart home",
+      crimeRate: "low",
+      noiseLevel: "moderate",
+      pollution: "moderate",
+      trafficCongestion: "high",
+      greenSpaceAccess: "low",
+      schoolQuality: "high",
+      bedrooms: 3,
+      bathrooms: 3.5,
+      squareFeet: 3200,
+      yearBuilt: 2023,
+      highlights: ["Panoramic Views", "Private Elevator", "Smart Home", "Concierge Service"]
+    }
+  },
+  {
+    id: "12",
+    title: "Coastal Cottage",
+    description: "Charming 2-bedroom beach cottage with ocean views and walking distance to the shore",
+    price: "$525,000",
+    imageUrl: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmVhY2glMjBob3VzZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
+    address: "42 Shore Drive, Coastal Village",
+    attributes: {
+      budget: "moderate",
+      location: "suburban",
+      size: "small to medium",
+      age: "established",
+      community: "mixed",
+      education: "moderate",
+      environment: "waterfront",
+      lifestyle: "relaxed",
+      mobility: "car dependent",
+      technology: "basic",
+      crimeRate: "very low",
+      noiseLevel: "moderate",
+      pollution: "very low",
+      trafficCongestion: "low",
+      greenSpaceAccess: "very high",
+      schoolQuality: "moderate",
+      bedrooms: 2,
+      bathrooms: 1.5,
+      squareFeet: 1100,
+      yearBuilt: 1995,
+      highlights: ["Beach Access", "Ocean Views", "Renovated Kitchen", "Deck"]
+    }
+  },
+  {
+    id: "13",
+    title: "Urban Garden Apartment",
+    description: "Unique 2-bedroom apartment with large private terrace garden in a vibrant neighborhood",
+    price: "$485,000",
+    imageUrl: "https://images.unsplash.com/photo-1451976426598-a7593bd6b5b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Z2FyZGVuJTIwYXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
+    address: "345 Green Terrace, Arts District",
+    attributes: {
+      budget: "moderate",
+      location: "urban",
+      size: "medium",
+      age: "established",
+      community: "creative",
+      education: "moderate",
+      environment: "green spaces priority",
+      lifestyle: "balanced",
+      mobility: "public transport dependent",
+      technology: "moderate tech",
+      crimeRate: "moderate",
+      noiseLevel: "moderate",
+      pollution: "moderate",
+      trafficCongestion: "moderate",
+      greenSpaceAccess: "high",
+      schoolQuality: "moderate",
+      bedrooms: 2,
+      bathrooms: 2,
+      squareFeet: 1200,
+      yearBuilt: 2005,
+      highlights: ["Private Garden", "Terrace", "Renovated", "Unique Design"]
+    }
+  },
+  {
+    id: "14",
+    title: "Country Estate",
+    description: "Elegant 6-bedroom estate on 5 acres with pool, tennis court, and guest house",
+    price: "$2,450,000",
+    imageUrl: "https://images.unsplash.com/photo-1505843513577-22bb7d21e455?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bHV4dXJ5JTIwaG91c2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+    address: "8 Estate Lane, Rolling Hills",
+    attributes: {
+      budget: "premium",
+      location: "rural",
+      size: "very large",
+      age: "established",
+      community: "exclusive",
+      education: "high priority",
+      environment: "natural setting",
+      lifestyle: "luxury",
+      mobility: "car dependent",
+      technology: "high-end smart home",
+      crimeRate: "very low",
+      noiseLevel: "very low",
+      pollution: "very low",
+      trafficCongestion: "very low",
+      greenSpaceAccess: "very high",
+      schoolQuality: "excellent",
+      bedrooms: 6,
+      bathrooms: 5.5,
+      squareFeet: 6800,
+      yearBuilt: 2008,
+      highlights: ["Tennis Court", "Pool", "Guest House", "5 Acres"]
     }
   }
 ];
+
+// Enhanced property matching algorithm with more accurate scoring
+export const matchPropertiesToPreferences = (
+  analysis: Record<string, string>,
+  environmentalPreferences: EnvironmentalPreference[] = []
+) => {
+  // Create a scoring system for properties
+  const scoredProperties = propertyData.map(property => {
+    let score = 0;
+    let maxScore = 0;
+    const matchDetails: Record<string, number> = {};
+    
+    // Score based on basic preferences
+    const propertyAttributes = property.attributes as Record<string, string>;
+    
+    // For each analysis criterion, check if property matches
+    Object.keys(analysis).forEach(key => {
+      if (key in propertyAttributes) {
+        const userPref = analysis[key].toLowerCase();
+        const propValue = propertyAttributes[key].toLowerCase();
+        
+        // Calculate match score based on exact or partial matches
+        let matchScore = 0;
+        
+        if (propValue.includes(userPref) || userPref.includes(propValue)) {
+          if (propValue === userPref) {
+            matchScore = 1; // Exact match
+          } else {
+            matchScore = 0.7; // Partial match
+          }
+        }
+        
+        // Apply weighted scoring for more important attributes
+        const weightedKeys: Record<string, number> = {
+          'budget': 1.5,
+          'location': 1.5,
+          'size': 1.2,
+          'community': 1.2,
+          'education': 1.2
+        };
+        
+        const weight = weightedKeys[key] || 1;
+        score += matchScore * weight;
+        maxScore += weight;
+        matchDetails[key] = matchScore * weight;
+      }
+    });
+    
+    // Score based on environmental preferences
+    environmentalPreferences.forEach(pref => {
+      const envKey = pref.type;
+      const envValue = pref.value;
+      
+      if (envKey in propertyAttributes) {
+        const propValue = propertyAttributes[envKey].toLowerCase();
+        let matchScore = 0;
+        
+        if (envValue === 'high' && ['high', 'very high', 'excellent'].includes(propValue)) {
+          matchScore = propValue === 'very high' || propValue === 'excellent' ? 2 : 1.5;
+        } else if (envValue === 'low' && ['low', 'very low', 'minimal'].includes(propValue)) {
+          matchScore = propValue === 'very low' || propValue === 'minimal' ? 2 : 1.5;
+        }
+        
+        // Environmental factors weighted higher
+        const weight = 2;
+        score += matchScore * weight;
+        maxScore += weight;
+        matchDetails[envKey] = matchScore * weight;
+      }
+    });
+    
+    const matchPercent = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+    
+    return {
+      ...property,
+      matchScore: matchPercent,
+      matchDetails
+    };
+  });
+  
+  // Return top properties sorted by score
+  return scoredProperties
+    .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
+    .slice(0, 3);
+};
 
 export const parseEnvironmentalQuery = (query: string): EnvironmentalPreference | null => {
   const queryLower = query.toLowerCase();
@@ -371,59 +629,4 @@ export const convertEnvironmentalQuestionToPreference = (
   }
   
   return null;
-};
-
-// Score properties based on user preferences
-export const matchPropertiesToPreferences = (
-  analysis: Record<string, string>,
-  environmentalPreferences: EnvironmentalPreference[] = []
-) => {
-  // Create a scoring system for properties
-  const scoredProperties = propertyData.map(property => {
-    let score = 0;
-    let maxScore = 0;
-    
-    // Score based on basic preferences
-    const propertyAttributes = property.attributes as Record<string, string>;
-    
-    // For each analysis criterion, check if property matches
-    Object.keys(analysis).forEach(key => {
-      if (
-        key in propertyAttributes && 
-        propertyAttributes[key].toLowerCase().includes(analysis[key].toLowerCase())
-      ) {
-        score += 1;
-      }
-      maxScore += 1;
-    });
-    
-    // Score based on environmental preferences
-    environmentalPreferences.forEach(pref => {
-      const envKey = pref.type;
-      const envValue = pref.value;
-      
-      if (
-        envKey in propertyAttributes && 
-        (
-          (envValue === 'high' && ['high', 'very high', 'excellent'].includes(propertyAttributes[envKey])) ||
-          (envValue === 'low' && ['low', 'very low', 'minimal'].includes(propertyAttributes[envKey]))
-        )
-      ) {
-        score += 2; // Environmental factors weighted higher
-      }
-      maxScore += 2;
-    });
-    
-    const matchPercent = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
-    
-    return {
-      ...property,
-      matchScore: matchPercent
-    };
-  });
-  
-  // Return top properties sorted by score
-  return scoredProperties
-    .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
-    .slice(0, 3);
 };
