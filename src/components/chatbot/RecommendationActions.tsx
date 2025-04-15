@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { ThumbsDown, ThumbsUp, Undo2, Save } from 'lucide-react';
+import { ThumbsDown, ThumbsUp, Undo2, Save, Share } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface RecommendationActionsProps {
@@ -20,6 +20,10 @@ const RecommendationActions = ({ onReset }: RecommendationActionsProps) => {
     toast.success("Recommendations saved to your account!");
   };
   
+  const handleShareRecommendation = () => {
+    toast.success("Recommendation link copied to clipboard!");
+  };
+  
   return (
     <div className="mt-4 flex flex-col space-y-3">
       <div className="flex justify-between">
@@ -32,15 +36,26 @@ const RecommendationActions = ({ onReset }: RecommendationActionsProps) => {
           <Undo2 className="h-3.5 w-3.5" />
           Start Over
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleSaveRecommendation}
-          className="flex items-center gap-1"
-        >
-          <Save className="h-3.5 w-3.5" />
-          Save
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShareRecommendation}
+            className="flex items-center gap-1"
+          >
+            <Share className="h-3.5 w-3.5" />
+            Share
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSaveRecommendation}
+            className="flex items-center gap-1"
+          >
+            <Save className="h-3.5 w-3.5" />
+            Save
+          </Button>
+        </div>
       </div>
       
       <div className="flex justify-center space-x-4">

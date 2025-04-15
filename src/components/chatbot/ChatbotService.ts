@@ -1,3 +1,4 @@
+
 import { environmentalRankings } from '../../data/environmentalData';
 import { type EnvironmentalPreference } from './types';
 
@@ -27,10 +28,10 @@ export const propertyData = [
       trafficCongestion: "high",
       greenSpaceAccess: "low",
       schoolQuality: "high",
-      bedrooms: 3,
-      bathrooms: 2,
-      squareFeet: 1450,
-      yearBuilt: 2019,
+      bedrooms: "3", // Changed from number to string
+      bathrooms: "2", // Changed from number to string
+      squareFeet: "1450", // Changed from number to string
+      yearBuilt: "2019", // Changed from number to string
       highlights: ["Smart Home", "City View", "Fitness Center", "Doorman"]
     }
   },
@@ -439,7 +440,7 @@ export const propertyData = [
   }
 ];
 
-// Enhanced property matching algorithm with more accurate scoring
+// Fix property matching algorithm to handle the attributes correctly
 export const matchPropertiesToPreferences = (
   analysis: Record<string, string>,
   environmentalPreferences: EnvironmentalPreference[] = []
@@ -451,13 +452,17 @@ export const matchPropertiesToPreferences = (
     const matchDetails: Record<string, number> = {};
     
     // Score based on basic preferences
-    const propertyAttributes = property.attributes as Record<string, string>;
+    // Need to cast attributes to Record<string, string> to satisfy TypeScript
+    const propertyAttributes = property.attributes as Record<string, string | string[]>;
     
     // For each analysis criterion, check if property matches
     Object.keys(analysis).forEach(key => {
       if (key in propertyAttributes) {
+        // Skip if the attribute is an array (like highlights)
+        if (Array.isArray(propertyAttributes[key])) return;
+        
         const userPref = analysis[key].toLowerCase();
-        const propValue = propertyAttributes[key].toLowerCase();
+        const propValue = (propertyAttributes[key] as string).toLowerCase();
         
         // Calculate match score based on exact or partial matches
         let matchScore = 0;
@@ -491,8 +496,8 @@ export const matchPropertiesToPreferences = (
       const envKey = pref.type;
       const envValue = pref.value;
       
-      if (envKey in propertyAttributes) {
-        const propValue = propertyAttributes[envKey].toLowerCase();
+      if (envKey in propertyAttributes && !Array.isArray(propertyAttributes[envKey])) {
+        const propValue = (propertyAttributes[envKey] as string).toLowerCase();
         let matchScore = 0;
         
         if (envValue === 'high' && ['high', 'very high', 'excellent'].includes(propValue)) {
